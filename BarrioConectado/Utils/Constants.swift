@@ -18,6 +18,7 @@ enum Constants {
 
     enum Colors {
         static let appColor: Color = .init(hex: "#2ead80")
+        static let backgroundGrayColor: Color = .init(hex: "#f5f5f5")
 
         // Peach
         static let peach: Color = .init(hex: "#fae0cf")

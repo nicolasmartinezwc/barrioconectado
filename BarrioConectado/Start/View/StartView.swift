@@ -8,39 +8,143 @@
 import SwiftUI
 
 struct StartView: View {
+    @State private var showPassword: Bool = false
+    @State private var email: String = ""
+    @State private var password: String = ""
+
     var body: some View {
         NavigationStack {
-            VStack {
-                Spacer()
-                Image(systemName: "building.2")
-                    .resizable()
-                    .frame(width: 250, height: 200)
-                Spacer()
-                Text("Bienvenido a Barrio Conectado")
-                    .multilineTextAlignment(.center)
+            ScrollView {
+                Text("Bienvenido/a a  Barrio Conectado")
                     .font(.title)
-                    .padding(.horizontal)
-                Spacer()
+                    .padding()
+                    .multilineTextAlignment(.center)
+
+                Image(.logo)
+                    .resizable()
+                    .frame(width: 250, height: 125)
+                    .padding([.horizontal, .bottom])
 
                 VStack {
-                    Text("Tenes una cuenta?")
-                    NavigationLink {
-                        LoginView()
+                    Button {
+                        AuthManager.instance.logIn()
                     } label: {
-                        Text("Inicia sesion")
+                        RoundedRectangle(cornerRadius: 25)
+                            .fill(.clear)
+                            .border(.link, width: 0.2)
+                            .frame(height: 44)
+                            .padding()
+                            .overlay {
+                                HStack {
+                                    Image(.google)
+                                        .resizable()
+                                        .frame(width: 32, height: 32)
+                                    Text("Continuar con Google")
+                                        .font(.system(size: 14, weight: .regular))
+                                        .foregroundStyle(.link)
+                                }
+                            }
                     }
+                    .buttonStyle(.plain)
+
+                    HStack {
+                        Rectangle()
+                            .frame(height: 2)
+                            .foregroundStyle(.black.opacity(0.1))
+                            .padding(.leading)
+                        Text("O continua con tu correo")
+                            .multilineTextAlignment(.center)
+                            .font(.system(size: 14, weight: .light))
+                        Rectangle()
+                            .frame(height: 2)
+                            .foregroundStyle(.black.opacity(0.1))
+                            .padding(.trailing)
+                    }
+                    .padding(.bottom)
                     
-                    .padding(.bottom, 20)
-                    
-                    Text("O si no")
+                    VStack {
+                        VStack(alignment: .leading) {
+                            Text("Email")
+                            TextField("", text: $email)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .scrollDismissesKeyboard(.automatic)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        .padding(.bottom)
+                        
+                        VStack {
+                            HStack {
+                                Text("Contraseña")
+                                Spacer()
+                                Button {
+                                    showPassword.toggle()
+                                } label: {
+                                    if showPassword {
+                                        Text("Ocultar")
+                                            .foregroundStyle(.link)
+                                    } else {
+                                        Text("Mostrar")
+                                            .foregroundStyle(.link)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            if showPassword {
+                                TextField("", text: $password)
+                                    .keyboardType(.alphabet)
+                                    .scrollDismissesKeyboard(.automatic)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                            } else {
+                                SecureField("", text: $password)
+                                    .keyboardType(.alphabet)
+                                    .scrollDismissesKeyboard(.automatic)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                            }
+                        }
+                    }
+                    .font(.system(size: 14, weight: .light))
+                    .padding([.bottom, .horizontal])
+
+                    Button {
+                        print("Iniciar sesión")
+                    } label: {
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(.link)
+                            .frame(height: 44)
+                            .padding([.horizontal])
+                            .overlay {
+                                Text("Iniciar sesión")
+                                    .font(.system(size: 14, weight: .regular))
+                                    .foregroundStyle(.white)
+                            }
+                    }
+                    .buttonStyle(.plain)
+
                     NavigationLink {
                         SignUpView()
                     } label: {
-                        Text("Crea una cuenta")
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(.white)
+                            .border(.link.opacity(0.2))
+                            .frame(height: 44)
+                            .padding()
+                            .overlay {
+                                Text("Registrarse")
+                                    .font(.system(size: 14, weight: .regular))
+                                    .foregroundStyle(.link)
+                            }
                     }
+                    .buttonStyle(.plain)
+                    
                 }
-                Spacer()
+                .background(.white)
+                .padding([.horizontal, .bottom])
+                .clipped()
+                .shadow(color: .black.opacity(0.2), radius: 5, y: 5)
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .background(Constants.Colors.backgroundGrayColor)
         }
     }
 }
