@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "alertBackground@1x.png",
+      "filename" : "google@1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "alertBackground@2x.png",
+      "filename" : "google@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "alertBackground@3x.png",
+      "filename" : "google@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
