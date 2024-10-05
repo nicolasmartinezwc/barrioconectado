@@ -23,6 +23,7 @@ class AuthManager: ObservableObject {
 
     private init() {}
 
+    /// Updates the current auth status and starts a listener to know if the user lost its session at any time.
     func initializeStatus() {
         hasSession = auth.currentUser != nil
         _ = auth.addStateDidChangeListener { [weak self] auth, user in
@@ -31,12 +32,77 @@ class AuthManager: ObservableObject {
     }
 
     // MARK: SIGN OUT
-    func signOut() {
+
+    /// Logs out the user.
+    func logOut() {
         try? auth.signOut()
     }
 
+    // MARK: Restore password
+
+    /// Sends an e-mail to the provided e-mail direction so the user can restore its password.
+    func sendPasswordReset(
+        to email: String
+    ) async -> Result<String, Error> {
+        do {
+            try await auth.sendPasswordReset(withEmail: email)
+            return .success(email)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    // MARK: SIGN UP
+
+    /// Creates a user with the provided information.
+    /// - Parameter email: The email fo the user.
+    /// - Parameter password: The password of the user.
+    /// - Parameter firstName: The name of the user.
+    /// - Parameter lastName: The last name of the user, if any
+    /// - Returns: An error if any occurred.
+    func createUser(
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String?
+    ) async -> Result<UserDataModel,Error> {
+        do {
+            let result = try await auth.createUser(withEmail: email, password: password)
+            let userData = UserDataModel(
+                id: result.user.uid,
+                email: email,
+                firstName: firstName,
+                lastName: lastName
+            )
+            return await DatabaseManager.instance.createUser(userData: userData)
+        } catch {
+            return .failure(error)
+        }
+    }
+
     // MARK: LOG IN
-    func logIn() {
+
+    /// Logs in the user with the provided credentials.
+    /// - Parameter email: The email fo the user.
+    /// - Parameter password: The password of the user.
+    /// - Returns: An error if any occurred.
+    func logInWithCredentials(
+        email: String,
+        password: String
+    ) async -> Result<UserDataModel, Error> {
+        do {
+            let authSignInResult = try await auth.signIn(withEmail: email, password: password)
+            return await DatabaseManager.instance.searchUserData(for: authSignInResult.user.uid)
+        } catch {
+            if hasSession {
+                logOut() // Logout in case an error ocurred while searching the user's data
+            }
+            return .failure(error)
+        }
+    }
+
+    /// Logs in the user using the Google login provider or creates one if is the first time it logs in.
+    func logInWithGoogle() {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             fatalError("Could not find a clientID while trying to log in with Google Sign In.")
         }
@@ -58,9 +124,9 @@ class AuthManager: ObservableObject {
                     accessToken: user.accessToken.tokenString
                 )
                 
-                let userData = await DatabaseManager.instance.searchUserData(for: result.user.userID)
+                let userData = await DatabaseManager.instance.searchUserData(for: result.user.userID!)
                 
-                if let userData {
+                if userData != nil {
                     // ya existe el user, completar el login
                     print("completar login")
                 } else {
@@ -81,7 +147,7 @@ class AuthManager: ObservableObject {
                         lastName: userProfileData.familyName ?? ""
                     )
                     
-                    let result = await DatabaseManager.instance.createUserData(with: userDataModel)
+                  /*  let result = await DatabaseManager.instance.createUserData(with: userDataModel)
                     
                     switch result {
                     case .success(_):
@@ -90,7 +156,7 @@ class AuthManager: ObservableObject {
                     case .failure(_):
                         // handlear el failure
                         return
-                    }
+                    }*/
                 }
             }
             catch {

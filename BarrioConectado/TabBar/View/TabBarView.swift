@@ -22,8 +22,8 @@ struct TabBarView: View {
                         icon: { Image(systemName: "house.fill") }
                     )
                 }
-                .badge(0)
                 .tag(1)
+                .badge(0)
                 
                 Text("Eventos")
                     .tabItem {
@@ -55,7 +55,10 @@ struct TabBarView: View {
                     .badge(3)
                     .tag(4)
                 
-                Text("Configuración")
+                Text("Logout (Configuracion)")
+                    .onTapGesture {
+                        AuthManager.instance.logOut()
+                    }
                     .tabItem {
                         Label(
                             title: { Text("Configuración") },

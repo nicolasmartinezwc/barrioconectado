@@ -37,7 +37,7 @@ struct BarrioConectadoApp: App {
                 if authManager.hasSession {
                     TabBarView()
                 } else {
-                    StartView()
+                    LoginView()
                 }
             }
             .preferredColorScheme(.light)

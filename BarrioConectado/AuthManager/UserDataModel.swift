@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct UserDataModel {
+struct UserDataModel: Codable {
     let id: String
     let email: String
     let firstName: String
-    let lastName: String
+    let lastName: String?
 }
