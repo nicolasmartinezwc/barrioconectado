@@ -28,10 +28,6 @@ class ChooseNeighbourhoodViewModel: ObservableObject {
     private let provincesURL: URL = URL(string: "https://apis.datos.gob.ar/georef/api/provincias?campos=id,nombre&max=5000")!
     private let baseNeighbourhoodsURL: URL = URL(string: "https://apis.datos.gob.ar/georef/api/municipios?campos=id,nombre&max=5000")!
     
-    deinit {
-        print("viewmodel deinit ok")
-    }
-    
     @MainActor
     func fetchProvinces() async {
         isLoading = true

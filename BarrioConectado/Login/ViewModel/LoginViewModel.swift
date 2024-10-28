@@ -44,10 +44,8 @@ class LoginViewModel: ObservableObject {
 
     func showErrorMessage(_ message: String) {
         errorMessage = message
-        /*
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
             self?.errorMessage = nil
         }
-         */
     }
 }
