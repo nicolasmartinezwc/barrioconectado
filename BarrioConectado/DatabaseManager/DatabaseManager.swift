@@ -16,11 +16,11 @@ class DatabaseManager {
 
     func checkIfEmailExists(email: String) async -> Result<String, Error> {
         do {
-            guard let result = try await db.collection("users")
+            guard try await db.collection("users")
                 .whereField("email", isEqualTo: email)
                 .getDocuments()
                 .documents
-                .first
+                .first != nil
             else {
                 return .failure(DatabaseError.UserWithEmailNotFound(email))
             }
@@ -61,6 +61,68 @@ class DatabaseManager {
             return .success(userData)
         } catch {
             return .failure(error)
+        }
+    }
+
+    func insertNeighbourhood(
+        neighbourhoodId: String,
+        neighbourhoodName: String,
+        province: String,
+        for uid: String
+    ) async -> Result<String ,Error> {
+        do {
+            try await db.collection("users")
+                .document(uid)
+                .setData(
+                    [
+                        "neighbourhood": neighbourhoodId,
+                        "province": province
+                    ],
+                    merge: true
+                )
+
+            let neighbourhoodsRef = db.collection("neighbourhoods")
+                .document(neighbourhoodId)
+
+            try await neighbourhoodsRef
+                .setData(
+                    [
+                        "name": neighbourhoodName,
+                        "province": province
+                    ]
+                )
+            
+            try await neighbourhoodsRef
+                .updateData(
+                    [
+                        "population": FieldValue.increment(Int64(1))
+                    ]
+                )
+
+            return .success(neighbourhoodName)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    func insertPost(
+        post: String,
+        for uid: String,
+        in neighbourhood: String
+    ) async throws {
+        do {
+            try await db.collection("posts")
+                .document()
+                .setData(
+                    [
+                        "neighbourhood": neighbourhood,
+                        "owner": uid,
+                        "post": post
+                    ],
+                    merge: true
+                )
+        } catch {
+            throw error
         }
     }
 }

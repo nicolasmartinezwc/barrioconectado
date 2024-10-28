@@ -15,7 +15,7 @@ struct HomeView: View {
         VStack {
             VStack {
                 HomeHeaderView(
-                    name: "Pepe ramirez",
+                    name: viewModel.userName,
                     description: "lorem ipsum dolor sit amet.",
                     imageName: "person"
                 )
@@ -63,6 +63,13 @@ struct HomeView: View {
             HomePostsList(viewModel: viewModel)
                 .padding(.top, -8)
 
+        }
+        .onAppear {
+            viewModel.fetchUserData()
+        }
+        .redacted(reason: viewModel.userData == nil ? .placeholder : [])
+        .fullScreenCover(isPresented: $viewModel.showOnboarding) {
+            OnBoardingView(showOnboarding: $viewModel.showOnboarding)
         }
         .background(.white)
     }

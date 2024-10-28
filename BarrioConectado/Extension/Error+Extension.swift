@@ -30,9 +30,24 @@ extension Error {
     }
 }
 
+enum BCError {
+    case EmptyProvinces
+    case EmptyNeighbourhoods(String)
+    
+    var spanishDescription: String {
+        switch self {
+        case .EmptyProvinces:
+            return "No se encontraron provincias."
+        case .EmptyNeighbourhoods(let province):
+            return "No se encontraron barrios en \(province)."
+        }
+    }
+}
+
 enum DatabaseError: Error {
     case UserNotFoundWithId(String)
     case UserWithEmailNotFound(String)
+    case ErrorWhileRegisteringNeighbourhood
 
     var spanishDescription: String {
         switch self {
@@ -40,6 +55,33 @@ enum DatabaseError: Error {
             return "No se encontró el usuario."
         case .UserWithEmailNotFound(let email):
             return "No se encontró un usuario con el correo \(email)."
+        case .ErrorWhileRegisteringNeighbourhood:
+            return "Ocurrió un error al registrar el barrio."
+        }
+    }
+}
+
+enum BCNetworkingError: Error {
+    case StatusCodeError(Int)
+    case DefaultError
+
+    var spanishDescription: String {
+        switch self {
+        case .StatusCodeError(let code):
+            return "Ocurrió un error: \(code)."
+        case .DefaultError:
+            return "Ocurrió un error al conectarse con el servidor."
+        }
+    }
+}
+
+enum AuthenticaitonError: Error {
+    case UserIdentifierIsNil
+
+    var spanishDescription: String {
+        switch self {
+        case .UserIdentifierIsNil:
+            return "Ocurrió un error al cargar la información del usuario."
         }
     }
 }

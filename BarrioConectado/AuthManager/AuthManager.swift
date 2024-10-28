@@ -8,13 +8,14 @@
 import FirebaseAuth
 import GoogleSignIn
 import Firebase
+import FirebaseCore
 
 class AuthManager: ObservableObject {
 
     private var auth: Auth = Auth.auth()
 
     public static let instance = AuthManager()
-    
+
     @Published var hasSession: Bool = false
 
     var currentUserUID: String? {
@@ -24,14 +25,31 @@ class AuthManager: ObservableObject {
     private init() {}
 
     /// Updates the current auth status and starts a listener to know if the user lost its session at any time.
+    @MainActor
     func initializeStatus() {
-        hasSession = auth.currentUser != nil
+        checkSessionStatus()
+        listenForAuthChanges()
+    }
+
+    /// Checks if the user is currently authenticated and fetches user data if so.
+    @MainActor 
+    private func checkSessionStatus() {
+        guard auth.currentUser?.uid != nil else {
+            return logOut()
+        }
+        hasSession = true
+    }
+
+    /// Starts a listener for authentication state changes.
+    @MainActor
+    private func listenForAuthChanges() {
         _ = auth.addStateDidChangeListener { [weak self] auth, user in
             self?.hasSession = user != nil
         }
     }
 
-    // MARK: SIGN OUT
+
+    // MARK: Log out
 
     /// Logs out the user.
     func logOut() {
@@ -52,7 +70,7 @@ class AuthManager: ObservableObject {
         }
     }
 
-    // MARK: SIGN UP
+    // MARK: Sign up
 
     /// Creates a user with the provided information.
     /// - Parameter email: The email fo the user.
@@ -65,7 +83,7 @@ class AuthManager: ObservableObject {
         password: String,
         firstName: String,
         lastName: String?
-    ) async -> Result<UserDataModel,Error> {
+    ) async -> Result<UserDataModel, Error> {
         do {
             let result = try await auth.createUser(withEmail: email, password: password)
             let userData = UserDataModel(
@@ -80,12 +98,13 @@ class AuthManager: ObservableObject {
         }
     }
 
-    // MARK: LOG IN
+    // MARK: Log in
 
     /// Logs in the user with the provided credentials.
     /// - Parameter email: The email fo the user.
     /// - Parameter password: The password of the user.
     /// - Returns: An error if any occurred.
+    @MainActor
     func logInWithCredentials(
         email: String,
         password: String

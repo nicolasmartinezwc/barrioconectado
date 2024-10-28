@@ -8,6 +8,17 @@
 import Foundation
 
 class HomeViewModel: ObservableObject {
+    // MARK: Properties
+
+    @Published var userData: UserDataModel?
+    @Published var errorMessage: String?
+    @Published var showOnboarding: Bool = false
+
+    var userName: String {
+        guard let userData else { return "" }
+        return "\(userData.firstName) \(userData.lastName ?? "")"
+    }
+
     let carousel: [HomeCarouselCellModel] = [
         HomeCarouselCellModel(
             iconName: "fireworks",
@@ -33,4 +44,32 @@ class HomeViewModel: ObservableObject {
     ]
 
     var posts: [HomePostModel] = []
+
+    // MARK: Methods
+
+    func showErrorMessage(_ message: String) {
+        errorMessage = message
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+            self?.errorMessage = nil
+        }
+    }
+
+    /// Fetches user data from the database.
+    @MainActor
+    func fetchUserData() {
+        guard let uid = AuthManager.instance.currentUserUID else {
+            let error = AuthenticaitonError.UserIdentifierIsNil
+            return showErrorMessage(error.spanishDescription)
+        }
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                userData = try await DatabaseManager.instance.searchUserData(for: uid).get()
+                showOnboarding = userData?.neighbourhood == nil
+            } catch {
+                showErrorMessage(error.spanishDescription)
+            }
+        }
+    }
+
 }

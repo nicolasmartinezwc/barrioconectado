@@ -10,8 +10,8 @@ import SwiftUI
 struct LoginView: View {
     @ObservedObject private var viewModel: LoginViewModel = LoginViewModel()
     @State private var showPassword: Bool = false
-    @State private var email: String = ""
-    @State private var password: String = ""
+    @State private var email: String = "test@test.com"
+    @State private var password: String = "123456"
     
     var body: some View {
         NavigationStack {
