@@ -38,6 +38,22 @@ struct InputValidator {
         ])
     }
 
+    func validateEventData(
+        title: String,
+        description: String,
+        location: String,
+        day: Int,
+        month: Int,
+        year: Int
+    ) -> InputValidatorResult {
+        evaluateValidationResults([
+            validateEventTitle(title: title),
+            validateEventDescription(description: description),
+            validateEventDate(day: day, month: month, year: year),
+            validateEventLocation(location: location)
+        ])
+    }
+
     // MARK: Evaluator
 
     private func evaluateValidationResults(_ results: [InputValidatorResult]) -> InputValidatorResult {
@@ -110,6 +126,81 @@ struct InputValidator {
 
         guard lastName.count <= 20 else {
             return .invalid("El apellido debe tener menos de 20 caracteres.")
+        }
+
+        return .valid
+    }
+    
+    
+    // MARK: Event validations
+
+    func validateEventTitle(title: String) -> InputValidatorResult {
+        guard !title.isEmpty else {
+            return .invalid("El título del evento no puede estar vacío.")
+        }
+
+        guard title.count >= 6 else {
+            return .invalid("El título debe tener al menos 6 caracteres.")
+        }
+
+        guard title.count < 50 else {
+            return .invalid("El título debe tener menos de 50 caracteres.")
+        }
+
+        return .valid
+    }
+    
+    func validateEventDescription(description: String) -> InputValidatorResult {
+        guard !description.isEmpty else {
+            return .invalid("La descripción del evento no puede estar vacía.")
+        }
+
+        guard description.count >= 10 else {
+            return .invalid("La descripción debe tener al menos 10 caracteres.")
+        }
+
+        guard description.count < 100 else {
+            return .invalid("La descripción debe tener menos de 100 caracteres.")
+        }
+
+        return .valid
+    }
+
+    func validateEventLocation(location: String) -> InputValidatorResult {
+        guard !location.isEmpty else {
+            return .invalid("La ubicación del evento no puede estar vacía.")
+        }
+
+        guard location.count >= 6 else {
+            return .invalid("La descripción debe tener al menos 6 caracteres.")
+        }
+
+        guard location.count < 100 else {
+            return .invalid("La ubicación debe tener menos de 100 caracteres.")
+        }
+
+        return .valid
+    }
+
+    func validateEventDate(
+        day: Int,
+        month: Int,
+        year: Int
+    ) -> InputValidatorResult {
+        let dateComponents = DateComponents(year: year, month: month, day: day)
+
+        guard let selectedDate = Calendar.current.date(from: dateComponents) else {
+            return .invalid("La fecha no es válida.")
+        }
+
+        let today = Calendar.current.startOfDay(for: Date())
+
+        if Calendar.current.startOfDay(for: selectedDate) < today {
+            return .invalid("La fecha elegida debe ser de hoy o de un día posterior.")
+        }
+
+        if year > today.components.year! + 1 {
+            return .invalid("Solo se pueden crear eventos de este año o del año siguiente.")
         }
 
         return .valid

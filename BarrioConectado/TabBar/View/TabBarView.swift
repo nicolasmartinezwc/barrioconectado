@@ -25,16 +25,18 @@ struct TabBarView: View {
                 .tag(1)
                 .badge(0)
                 
-                Text("Eventos")
-                    .tabItem {
-                        Label(
-                            title: { Text("Eventos") },
-                            icon: { Image(systemName: "person.3.fill") }
-                        )
-                    }
-                    .badge(0)
-                    .tag(2)
-                
+                NavigationStack {
+                    EventsView()
+                }
+                .tabItem {
+                    Label(
+                        title: { Text("Eventos") },
+                        icon: { Image(systemName: "person.3.fill") }
+                    )
+                }
+                .badge(0)
+                .tag(2)
+
                 Text("Alertas")
                     .tabItem {
                         Label(

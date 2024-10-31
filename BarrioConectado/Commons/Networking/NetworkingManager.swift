@@ -13,6 +13,8 @@ struct NetworkingManager {
 
     private init() { }
 
+    /// Fetches data from the provided URL and decodes it as the specified generic type.
+    /// Important: You should involve this within a Task block otherwise you could provoke a memory leak.
     func fetch<T: Decodable>(from url: URL) async -> Result<T, Error> {
         let request = URLRequest(
             url: url,

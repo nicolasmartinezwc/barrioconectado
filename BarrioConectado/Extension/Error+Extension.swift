@@ -45,9 +45,12 @@ enum BCError {
 }
 
 enum DatabaseError: Error {
+    case UserNotFound
     case UserNotFoundWithId(String)
     case UserWithEmailNotFound(String)
     case ErrorWhileRegisteringNeighbourhood
+    case ErrorWhileRegisteringEvent
+    case NeighbourhoodNotFound
 
     var spanishDescription: String {
         switch self {
@@ -57,6 +60,12 @@ enum DatabaseError: Error {
             return "No se encontró un usuario con el correo \(email)."
         case .ErrorWhileRegisteringNeighbourhood:
             return "Ocurrió un error al registrar el barrio."
+        case .NeighbourhoodNotFound:
+            return "No se encontró el barrio."
+        case .UserNotFound:
+            return "No se encontró el usuario."
+        case .ErrorWhileRegisteringEvent:
+            return "Ocurrió un error al crear el evento."
         }
     }
 }

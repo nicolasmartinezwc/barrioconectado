@@ -23,9 +23,7 @@ struct ChooseNeighbourhoodView: View {
                         }
                     }
                     .onChange(of: viewModel.selectedProvince) { _, _ in
-                        Task {
-                            await viewModel.fetchNeighbourhoods()
-                        }
+                        viewModel.fetchNeighbourhoods()
                     }
                     .pickerStyle(MenuPickerStyle())
                     .frame(height: 60)
@@ -72,9 +70,7 @@ struct ChooseNeighbourhoodView: View {
                     .interactiveDismissDisabled()
             }
             .onAppear {
-                Task {
-                    await self.viewModel.fetchProvinces()
-                }
+                viewModel.fetchProvinces()
             }
             .onDisappear {
                 viewModel.cancelTasks()
