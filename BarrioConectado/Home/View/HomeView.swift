@@ -77,7 +77,7 @@ struct HomeView: View {
             }
             .onAppear {
                 if firstAppear {
-                    viewModel.fetchUserData()
+                    viewModel.fetchUserData(retries: 3)
                 } else {
                     viewModel.fetchPosts()
                 }

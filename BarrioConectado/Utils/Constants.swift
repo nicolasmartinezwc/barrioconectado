@@ -34,6 +34,9 @@ enum Constants {
 
         // Yellow
         static let yellow: Color = .init(hex: "#f8fa93")
-
+        
+        // Danger
+        static let clearDanger: Color = .init(hex: "#f7d5d7")
+        static let darkDanger: Color = .init(hex: "#b85c62")
     }
 }

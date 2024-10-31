@@ -86,11 +86,14 @@ enum BCNetworkingError: Error {
 
 enum AuthenticaitonError: Error {
     case UserIdentifierIsNil
+    case ErrorWhileLogginInWithGoogle
 
     var spanishDescription: String {
         switch self {
         case .UserIdentifierIsNil:
             return "Ocurrió un error al cargar la información del usuario."
+        case .ErrorWhileLogginInWithGoogle:
+            return "Ocurrió un error al iniciar sesión."
         }
     }
 }

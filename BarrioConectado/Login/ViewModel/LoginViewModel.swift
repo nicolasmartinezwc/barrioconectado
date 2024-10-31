@@ -33,7 +33,23 @@ class LoginViewModel: ObservableObject {
             let result = await AuthManager.instance.logInWithCredentials(email: email, password: password)
             switch result {
             case .success(_):
-                // handle success
+                // Handle success
+                return
+            case .failure(let error):
+                self?.showErrorMessage(error.spanishDescription)
+            }
+            self?.isLoginRunning = false
+        }
+    }
+
+    @MainActor
+    func startLoginWithGoogleFlow() {
+        isLoginRunning = true
+        Task { [weak self] in
+            let result = await AuthManager.instance.startLoginWithGoogleFlow()
+            switch result {
+            case .success(_):
+                // Handle success
                 return
             case .failure(let error):
                 self?.showErrorMessage(error.spanishDescription)

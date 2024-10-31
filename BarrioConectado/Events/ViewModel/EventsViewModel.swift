@@ -64,8 +64,13 @@ class EventsViewModel: ObservableObject {
     @MainActor
     func fetchEvents() {
         Task { [weak self] in
-            guard let self else { return }
-            let result = await DatabaseManager.instance.searchEvents()
+            guard let self,
+            let user = await getUserData(),
+                  let neighbourhood = user.neighbourhood
+            else {
+                return
+            }
+            let result = await DatabaseManager.instance.searchEvents(for: neighbourhood)
             switch result {
             case .success(let events):
                 guard !events.isEmpty else { return }
@@ -94,6 +99,12 @@ class EventsViewModel: ObservableObject {
         else {
             return .failure(DatabaseError.UserNotFound)
         }
+
+        guard let neighbourhood = user.neighbourhood
+        else {
+            return .failure(DatabaseError.NeighbourhoodNotFound)
+        }
+
         let dateComponents = DateComponents(year: year, month: month, day: day)
         let date = Calendar.current.date(from: dateComponents) ?? Date()
         let event = EventModel(
@@ -107,8 +118,9 @@ class EventsViewModel: ObservableObject {
             location: location,
             allDay: allDay,
             creator: user.lastName != nil ? "\(user.firstName) \(user.lastName ?? "")" : "\(user.firstName)",
-            pictureUrl: pictureUrl,
-            assistants: []
+            assistants: [],
+            createdAt: Date(),
+            neighbourhood: neighbourhood
         )
         return await DatabaseManager.instance.insertEvent(event: event)
     }
@@ -122,6 +134,33 @@ class EventsViewModel: ObservableObject {
         case .failure(_):
             return nil
         }
+    }
+
+    @MainActor
+    func toggleAssistance(
+        for event: EventModel
+    ) {
+        guard let uid = AuthManager.instance.currentUserUID,
+              let index = events.firstIndex(where: { $0 == event })
+        else {
+            return
+        }
+        if event.assists() {
+            events[index].assistants.removeAll { $0 == uid }
+        } else {
+            events[index].assistants.append(uid)
+        }
+        Task { [weak self] in
+            guard let self else { return }
+            let result = await DatabaseManager.instance.updateEvent(event: events[index])
+            switch result {
+            case .success(_):
+                return
+            case .failure(let error):
+                showErrorMessage(error.spanishDescription)
+            }
+        }
+        
     }
 
     func showErrorMessage(_ message: String) {

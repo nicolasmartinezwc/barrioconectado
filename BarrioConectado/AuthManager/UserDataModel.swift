@@ -15,7 +15,7 @@ struct UserDataModel: Codable {
     let neighbourhood: String?
     let description: String
     let provinceId: String?
-    let pictureUrl: String?
+    let pictureUrl: String
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -26,7 +26,7 @@ struct UserDataModel: Codable {
         self.neighbourhood = try container.decodeIfPresent(String.self, forKey: .neighbourhood)
         self.provinceId = try container.decodeIfPresent(String.self, forKey: .provinceId)
         self.description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
-        self.pictureUrl = try container.decodeIfPresent(String.self, forKey: .pictureUrl) ?? ""
+        self.pictureUrl = try container.decode(String.self, forKey: .pictureUrl)
     }
 
     enum CodingKeys: String, CodingKey {
@@ -46,7 +46,7 @@ struct UserDataModel: Codable {
         neighbourhood: String? = "",
         provinceId: String = "",
         description: String = "",
-        pictureUrl: String? = ""
+        pictureUrl: String = "user_placeholder"
     ) {
         self.id = id
         self.email = email

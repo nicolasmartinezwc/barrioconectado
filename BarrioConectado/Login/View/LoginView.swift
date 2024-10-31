@@ -29,7 +29,7 @@ struct LoginView: View {
                     
                     VStack {
                         Button {
-                            AuthManager.instance.logInWithGoogle()
+                            viewModel.startLoginWithGoogleFlow()
                         } label: {
                             RoundedRectangle(cornerRadius: 25)
                                 .fill(.clear)

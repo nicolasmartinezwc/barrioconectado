@@ -32,7 +32,13 @@ class DatabaseManager {
         }
     }
     
-    func searchUserData(for uid: String) async -> Result<UserDataModel, Error> {
+    func searchUserData(
+        for uid: String?
+    ) async -> Result<UserDataModel, Error> {
+        guard let uid
+        else {
+            return .failure(DatabaseError.UserNotFound)
+        }
         do {
             guard let resultAsDictionary = try await db.collection("users")
                 .document(uid)
@@ -112,9 +118,12 @@ class DatabaseManager {
         }
     }
 
-    func searchEvents() async -> Result<[EventModel], Error> {
+    func searchEvents(
+        for neighbourhood: String
+    ) async -> Result<[EventModel], Error> {
         do {
             let eventsAsDocuments = try await db.collection("events")
+                .whereField("neighbourhood", isEqualTo: neighbourhood)
                 .order(by: "created_at", descending: true)
                 .getDocuments()
             var events = [EventModel]()
@@ -141,7 +150,9 @@ class DatabaseManager {
                     "id": userData.id,
                     "email": userData.email,
                     "first_name": userData.firstName,
-                    "last_name": userData.lastName ?? ""
+                    "last_name": userData.lastName ?? "",
+                    "description": userData.description,
+                    "picture_url": userData.pictureUrl
                 ])
             return .success(userData)
         } catch {
@@ -259,18 +270,18 @@ class DatabaseManager {
                 .setData(
                     [
                         "id": event.id,
+                        "created_at": event.createdAt.timeIntervalSince1970,
                         "title": event.title,
                         "description": event.description,
-                        "date": event.date,
+                        "date": event.date.timeIntervalSince1970,
                         "assistants": [],
                         "starts_at_hours": event.startsAtHours,
                         "starts_at_minutes": event.startsAtMinutes,
-                        "picture_url": event.pictureUrl ?? "",
                         "all_day": event.allDay,
                         "creator": event.creator,
                         "location": event.location,
-                        "category": event.category.rawValue
-                        
+                        "category": event.category.rawValue,
+                        "neighbourhood": event.neighbourhood                        
                     ],
                     merge: true
                 )
@@ -338,6 +349,24 @@ class DatabaseManager {
                     merge: true
                 )
             return .success(comment)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    func updateEvent(
+        event: EventModel
+    ) async -> Result<EventModel, Error> {
+        do {
+            try await db.collection("events")
+                .document(event.id)
+                .setData(
+                    [
+                        "assistants": event.assistants
+                    ],
+                    merge: true
+                )
+            return .success(event)
         } catch {
             return .failure(error)
         }

@@ -53,28 +53,37 @@ class HomeViewModel: ObservableObject {
             self?.errorMessage = nil
         }
     }
-    
+
     /// Fetches user data from the database.
     @MainActor
-    func fetchUserData() {
+    func fetchUserData(
+        retries: Int = 0
+    ) {
         guard let uid else {
             let error = AuthenticaitonError.UserIdentifierIsNil
             return showErrorMessage(error.spanishDescription)
         }
         Task { [weak self] in
             guard let self else { return }
-            do {
-                userModel = try await DatabaseManager.instance.searchUserData(for: uid).get()
+            let result = await DatabaseManager.instance.searchUserData(for: uid)
+            switch result {
+            case .success(let userData):
+                userModel = userData
                 showOnboarding = userModel?.neighbourhood == nil
                 if !showOnboarding {
                     fetchNeighbourhoodData()
                 }
-            } catch {
-                showErrorMessage(error.spanishDescription)
+            case .failure(let error):
+                if retries > 0 {
+                    try? await Task.sleep(nanoseconds: UInt64(2_000_000_000))
+                    fetchUserData(retries: retries - 1)
+                } else {
+                    showErrorMessage(error.spanishDescription)
+                }
             }
         }
     }
-    
+
     @MainActor
     func updateDescription(
         description: String

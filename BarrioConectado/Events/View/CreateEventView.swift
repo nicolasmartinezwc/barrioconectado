@@ -37,10 +37,10 @@ struct CreateEventView: View {
                 .padding(.bottom, -10)
                 
                 Form {
-                    Section(header: Text("Datos del evento")) {
+                    Section(header: Text("Título")) {
                         VStack {
                             HStack {
-                                Text("Título")
+                                Text("¿Cuál es el evento?")
                                     .font(.system(size: 14))
                                     .foregroundStyle(.black)
                                 Spacer()
@@ -48,11 +48,13 @@ struct CreateEventView: View {
                             TextField("Ingresa el título del evento", text: $title)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
-                        .padding(.top)
-                        
+                        .padding(.vertical, 10)
+                    }
+                    
+                    Section(header: Text("Descripción")) {
                         VStack {
                             HStack {
-                                Text("Descripción")
+                                Text("¿De qué trata el evento?")
                                     .font(.system(size: 14))
                                     .foregroundStyle(.black)
                                 Spacer()
@@ -60,8 +62,24 @@ struct CreateEventView: View {
                             TextField("Ingresa una descripción", text: $description)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
-                        .padding(.top)
-                        
+                        .padding(.vertical, 10)
+                    }
+                    
+                    Section(header: Text("Ubicación")) {
+                        VStack {
+                            HStack {
+                                Text("¿Donde queda?")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(.black)
+                                Spacer()
+                            }
+                            TextField("Escribe la dirección", text: $location)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        .padding(.vertical, 10)
+                    }
+                    
+                    Section(header: Text("Categoría")) {
                         Picker("Elige una categoría", selection: $selectedCategory) {
                             ForEach(EventCategory.allCases, id: \.self) { category in
                                 HStack {
@@ -78,7 +96,7 @@ struct CreateEventView: View {
                                 }
                             }
                         }
-                        .padding(.top)
+                        .padding(.vertical, 10)
                         
                         HStack {
                             Image(systemName: selectedCategory.information.iconName)
@@ -93,7 +111,7 @@ struct CreateEventView: View {
                                 .multilineTextAlignment(.leading)
                             Spacer()
                         }
-                        .padding(.vertical)
+                        .padding(.bottom, 10)
                     }
                     
                     Section(header: Text("Fecha")) {
@@ -124,20 +142,6 @@ struct CreateEventView: View {
                             }
                         }
                         .padding(.bottom, 10)
-                    }
-                    
-                    Section(header: Text("Ubicación")) {
-                        VStack {
-                            HStack {
-                                Text("¿Donde queda?")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.black)
-                                Spacer()
-                            }
-                            TextField("Escribe la dirección", text: $location)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
-                        .padding(.vertical)
                     }
                     
                     Section(header: Text("Horario")) {

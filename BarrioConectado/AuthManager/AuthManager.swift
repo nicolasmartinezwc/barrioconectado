@@ -120,67 +120,70 @@ class AuthManager: ObservableObject {
         }
     }
 
-    /// Logs in the user using the Google login provider or creates one if is the first time it logs in.
-    func logInWithGoogle() {
+    @MainActor
+    private func logInWithGoogle() async -> Result<GIDGoogleUser, Error> {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             fatalError("Could not find a clientID while trying to log in with Google Sign In.")
         }
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
+        do {
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: UIApplication.getRootViewController())
+            guard let idToken = result.user.idToken?.tokenString else {
+                fatalError("Could not find an id token from Google Sign In.")
+            }
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: result.user.accessToken.tokenString)
+            try await auth.signIn(with: credential)
+            return .success(result.user)
+        } catch {
+            return .failure(error)
+        }
+    }
 
-        Task { @MainActor [weak self] in
-            do {
-                let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: UIApplication.getRootViewController())
-                
-                guard let idToken = result.user.idToken?.tokenString else {
-                    fatalError("Could not find an id token from Google Sign In.")
-                }
-                
-                let user = result.user
-                
-                let credential = GoogleAuthProvider.credential(
-                    withIDToken: idToken,
-                    accessToken: user.accessToken.tokenString
-                )
-                
-                let userData = await DatabaseManager.instance.searchUserData(for: result.user.userID!)
-                
-                if userData != nil {
-                    // ya existe el user, completar el login
-                    print("completar login")
-                } else {
-                    // no existe el user, crear datos en la DB
-                    guard let userProfileData = user.profile,
-                          let firstName = user.profile?.givenName else {
-                        fatalError("Error while retriving user's profile data from Google Sign In.")
-                    }
-                    
-                    guard let currentUserUID = self?.currentUserUID else {
-                        fatalError("Error while retriving currentUserUID when its supossed to exist.")
-                    }
-                    
-                    let userDataModel = UserDataModel(
-                        id: currentUserUID,
-                        email: userProfileData.email,
-                        firstName: firstName,
-                        lastName: userProfileData.familyName ?? ""
-                    )
-                    
-                  /*  let result = await DatabaseManager.instance.createUserData(with: userDataModel)
-                    
-                    switch result {
-                    case .success(_):
-                        // si es success enviar a elegir barrio
-                        return
-                    case .failure(_):
-                        // handlear el failure
-                        return
-                    }*/
-                }
+    /// Logs in the user using the Google login provider or creates one if is the first time it logs in.
+    @MainActor
+    func startLoginWithGoogleFlow() async -> Result<UserDataModel, Error> {
+        let logInWithGoogleResult = await logInWithGoogle()
+        switch logInWithGoogleResult {
+        case .success(let googleUser):
+            return await createUserFromGoogle(with: googleUser)
+        case .failure(let error):
+            logOut()
+            return .failure(error)
+        }
+    }
+
+    func createUserFromGoogle(
+        with googleUser: GIDGoogleUser
+    ) async -> Result<UserDataModel, Error> {
+        guard auth.currentUser != nil
+        else {
+            return .failure(AuthenticaitonError.ErrorWhileLogginInWithGoogle)
+        }
+        guard let currentUserUID
+        else {
+            return .failure(AuthenticaitonError.UserIdentifierIsNil)
+        }
+        let userData = await DatabaseManager.instance.searchUserData(for: currentUserUID)
+        switch userData {
+        case .success(let userData):
+            return .success(userData)
+        case .failure(_):
+            guard let userProfile = googleUser.profile
+            else {
+                fatalError("Error while retriving user's profile data from Google Sign In.")
             }
-            catch {
-                print(error)
+            guard let firstName = userProfile.givenName
+            else {
+                fatalError("Error while retriving user's profile data from Google Sign In.")
             }
+            let userData = UserDataModel(
+                id: currentUserUID,
+                email: userProfile.email,
+                firstName: firstName,
+                lastName: userProfile.familyName ?? ""
+            )
+            return await DatabaseManager.instance.createUser(userData: userData)
         }
     }
 }

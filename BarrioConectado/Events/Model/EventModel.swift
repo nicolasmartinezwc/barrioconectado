@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EventModel: Codable, Identifiable {
+struct EventModel: Codable, Identifiable, Equatable {
     let id: String
     let title: String
     let description: String
@@ -18,27 +18,38 @@ struct EventModel: Codable, Identifiable {
     let location: String
     let allDay: Bool
     let creator: String
-    let pictureUrl: String?
-    let assistants: [String]
+    var assistants: [String]
+    let createdAt: Date
+    let neighbourhood: String
+
+    func isFinished() -> Bool {
+        date.timeIntervalSince1970 <= Date().timeIntervalSince1970
+    }
+
+    func assists() -> Bool {
+        assistants.contains { $0 == AuthManager.instance.currentUserUID ?? "" }
+    }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)
         self.title = try container.decode(String.self, forKey: .title)
         self.description = try container.decode(String.self, forKey: .description)
-        let date = try container.decode(Double.self, forKey: .date)
-        self.date = Date(timeIntervalSince1970: date)
         self.startsAtHours = try container.decode(Int.self, forKey: .startsAtHours)
         self.startsAtMinutes = try container.decode(Int.self, forKey: .startsAtMinutes)
         self.category = try container.decode(EventCategory.self, forKey: .category)
         self.location = try container.decode(String.self, forKey: .location)
         self.allDay = try container.decode(Bool.self, forKey: .allDay)
         self.creator = try container.decode(String.self, forKey: .creator)
-        self.pictureUrl = try container.decodeIfPresent(String.self, forKey: .pictureUrl)
         self.assistants = try container.decode([String].self, forKey: .assistants)
+        let date = try container.decode(Double.self, forKey: .date)
+        self.date = Date(timeIntervalSince1970: date)
+        let createdAt = try container.decode(Double.self, forKey: .createdAt)
+        self.createdAt = Date(timeIntervalSince1970: createdAt)
+        self.neighbourhood = try container.decode(String.self, forKey: .neighbourhood)
     }
 
-    init(id: String, title: String, description: String, date: Date, startsAtHours: Int, startsAtMinutes: Int, category: EventCategory, location: String, allDay: Bool, creator: String, pictureUrl: String? = nil, assistants: [String]) {
+    init(id: String, title: String, description: String, date: Date, startsAtHours: Int, startsAtMinutes: Int, category: EventCategory, location: String, allDay: Bool, creator: String, assistants: [String], createdAt: Date, neighbourhood: String) {
         self.id = id
         self.title = title
         self.description = description
@@ -49,16 +60,17 @@ struct EventModel: Codable, Identifiable {
         self.location = location
         self.allDay = allDay
         self.creator = creator
-        self.pictureUrl = pictureUrl
         self.assistants = assistants
+        self.createdAt = createdAt
+        self.neighbourhood  = neighbourhood
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, title, description, date, category, location, creator, assistants
+        case id, title, description, date, category, location, creator, assistants, neighbourhood
         case startsAtHours = "starts_at_hours"
         case startsAtMinutes = "starts_at_minutes"
         case allDay = "all_day"
-        case pictureUrl = "picture_url"
+        case createdAt = "created_at"
     }
 }
 

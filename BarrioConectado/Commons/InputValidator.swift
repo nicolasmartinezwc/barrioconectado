@@ -49,8 +49,8 @@ struct InputValidator {
         evaluateValidationResults([
             validateEventTitle(title: title),
             validateEventDescription(description: description),
-            validateEventDate(day: day, month: month, year: year),
-            validateEventLocation(location: location)
+            validateEventLocation(location: location),
+            validateEventDate(day: day, month: month, year: year)
         ])
     }
 
