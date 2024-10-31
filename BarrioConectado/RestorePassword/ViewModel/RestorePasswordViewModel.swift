@@ -47,7 +47,7 @@ class RestorePasswordViewModel: ObservableObject {
 
     private func showSuccessMessage(_ message: String) {
         snackBarModel = SnackBarModel(
-            text: "Te envíamos un correo para que restablezcas tu contraseña.",
+            text: "Hemos enviado un correo para que restablezcas tu contraseña.",
             color: .green
         )
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in

@@ -170,7 +170,9 @@ struct EventsView: View {
                             }
                         }
                         .background(.white)
-                        .padding()
+                        .padding()                        
+                        .clipped()
+                        .shadow(color: .black.opacity(0.2), radius: 5, y: 5)
                     }
                 }
             }
