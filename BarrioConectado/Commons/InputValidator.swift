@@ -300,8 +300,8 @@ struct InputValidator {
             return .invalid("La descripción debe tener al menos 10 caracteres.")
         }
 
-        guard description.count < 100 else {
-            return .invalid("La descripción debe tener menos de 100 caracteres.")
+        guard description.count < 300 else {
+            return .invalid("La descripción debe tener menos de 300 caracteres.")
         }
 
         return .valid
