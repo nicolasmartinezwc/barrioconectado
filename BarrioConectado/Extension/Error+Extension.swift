@@ -77,6 +77,7 @@ enum DatabaseError: Error {
     case ErrorWhileRegisteringNeighbourhood
     case ErrorWhileRegisteringEvent
     case NeighbourhoodNotFound
+    case ErrorWhileRegisteringAnnouncement
 
     var spanishDescription: String {
         switch self {
@@ -92,6 +93,8 @@ enum DatabaseError: Error {
             return "No se encontró el usuario."
         case .ErrorWhileRegisteringEvent:
             return "Ocurrió un error al crear el evento."
+        case .ErrorWhileRegisteringAnnouncement:
+            return "Ocurrió un error al crear el anuncio."
         }
     }
 }

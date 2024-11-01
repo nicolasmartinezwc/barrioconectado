@@ -47,7 +47,7 @@ class HomeViewModel: ObservableObject {
             iconColor: Constants.Colors.darkNature,
             iconBackgroundColor: Constants.Colors.nature,
             text: "Vende o regala articulos que ya no utilices",
-            correspondingTab: Constants.Tabs.exchanges
+            correspondingTab: Constants.Tabs.announcements
         )
     ]
     
@@ -291,17 +291,25 @@ class HomeViewModel: ObservableObject {
                 guard let newImage else {
                     throw BCError.UploadedImageIsNil
                 }
-                
+
                 guard let imageAsData = try await newImage.loadTransferable(type: Data.self) else {
                     throw BCError.ImageLoadFailed
                 }
-                
+
                 guard let fileType = imageAsData.getFileType() else {
                     throw BCError.NotAllowedImageType
                 }
                 
                 guard imageAsData.sizeIsLessThan10MB() else {
                     throw BCError.ImageSizeIsBiggerThan10MB
+                }
+
+                guard let imageAsUIImage = UIImage(data: imageAsData) else {
+                    throw BCError.ImageLoadFailed
+                }
+
+                guard let croppedImage = imageAsUIImage.cropAndResize(to: CGSize(width: 65, height: 65))?.jpegData(compressionQuality: 1) else {
+                    throw BCError.ImageLoadFailed
                 }
                 
                 isLoadingImage = true
@@ -313,7 +321,7 @@ class HomeViewModel: ObservableObject {
                 let newPhotoRef = storageRef.child("images/\(userModel.id)/\(newImageName)")
                 
                 // Update new photo
-                _ = try await newPhotoRef.putDataAsync(imageAsData)
+                _ = try await newPhotoRef.putDataAsync(croppedImage)
                 
                 // Download previous photo
                 if let _ = try? await previousPhotoRef.getMetadata() {

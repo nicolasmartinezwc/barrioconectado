@@ -139,6 +139,27 @@ class DatabaseManager {
         }
     }
 
+    func searchAnnouncements(
+        for neighbourhood: String
+    ) async -> Result<[AnnouncementModel], Error> {
+        do {
+            let announcementsAsDocuments = try await db.collection("announcements")
+                .whereField("neighbourhood", isEqualTo: neighbourhood)
+                .order(by: "created_at", descending: true)
+                .getDocuments()
+            var announcements: [AnnouncementModel] = []
+            try announcementsAsDocuments.documents.forEach { announcementAsDocument in
+                let announcementAsJson = announcementAsDocument.data()
+                let announcementAsData = try JSONSerialization.data(withJSONObject: announcementAsJson)
+                let announcement = try JSONDecoder().decode(AnnouncementModel.self, from: announcementAsData)
+                announcements.append(announcement)
+            }
+            return .success(announcements)
+        } catch {
+            return .failure(error)
+        }
+    }
+
     // MARK: Create
     
     @discardableResult
@@ -291,6 +312,33 @@ class DatabaseManager {
         }
     }
 
+    func insertAnnouncement(
+        announcement: AnnouncementModel
+    ) async -> Result<AnnouncementModel, Error> {
+        do {
+            try await db.collection("announcements")
+                .document(announcement.id)
+                .setData(
+                    [
+                        "id": announcement.id,
+                        "created_at": announcement.createdAt.timeIntervalSince1970,
+                        "title": announcement.title,
+                        "description": announcement.description,
+                        "category": announcement.category.rawValue,
+                        "neighbourhood": announcement.neighbourhood,
+                        "owner": announcement.owner,
+                        "owner_name": announcement.ownerName,
+                        "owner_email": announcement.ownerEmail,
+                        "contact_phone": announcement.contactPhone
+                    ],
+                    merge: true
+                )
+            return .success(announcement)
+        } catch {
+            return .failure(error)
+        }
+    }
+
     // MARK: Update
 
     func updateUser(
@@ -401,6 +449,21 @@ class DatabaseManager {
 
         } catch {
             throw error
+        }
+    }
+
+    // MARK: Delete
+    func removeAnnouncement(
+        announcement: AnnouncementModel
+    ) {
+        Task {
+            do {
+                try await db.collection("announcements")
+                    .document(announcement.id)
+                    .delete()
+            } catch {
+                print(error)
+            }
         }
     }
 }

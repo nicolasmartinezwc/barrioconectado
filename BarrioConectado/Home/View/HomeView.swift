@@ -39,7 +39,7 @@ struct HomeView: View {
                 }
                 
                 HStack {
-                    Text("Posteos de esta semana en \(viewModel.neighbourhoodModel?.name ?? ""), \(viewModel.neighbourhoodModel?.province ?? "").")
+                    Text("Posteos de los últimos 30 días en \(viewModel.neighbourhoodModel?.name ?? ""), \(viewModel.neighbourhoodModel?.province ?? "").")
                         .foregroundStyle(.black)
                         .lineLimit(2)
                         .font(.system(size: 16, weight: .medium))

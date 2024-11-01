@@ -189,19 +189,3 @@ struct HomePostView: View {
         .scrollBounceBehavior(.basedOnSize)
     }
 }
-
-#Preview {
-    let model = HomePostModel(
-        id: "",
-        text: "",
-        amountOfLikes: 0,
-        amountOfComments: 0,
-        likedBy: [],
-        owner: "",
-        neighbourhood: "",
-        createdAt: Date(),
-        ownerName: "",
-        ownerPictureUrl: ""
-    )
-    return HomePostView(viewModel: HomeViewModel(), post: model, standalone: false)
-}

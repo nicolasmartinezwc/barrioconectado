@@ -54,6 +54,19 @@ struct InputValidator {
         ])
     }
 
+    func validateAnnouncementData(
+        title: String,
+        description: String,
+        phoneNumber: String,
+        usePhoneNumber: Bool
+    ) -> InputValidatorResult {
+        evaluateValidationResults([
+            validateAnnouncementTitle(title: title),
+            validateAnnouncementDescription(description: description),
+            validateAnnouncementPhoneNumber(phoneNumber: phoneNumber, usePhoneNumber: usePhoneNumber)
+        ])
+    }
+
     func validateUserDescription(
         description: String
     ) -> InputValidatorResult {
@@ -255,6 +268,63 @@ struct InputValidator {
 
         if year > today.components.year! + 1 {
             return .invalid("Solo se pueden crear eventos de este año o del año siguiente.")
+        }
+
+        return .valid
+    }
+
+    // MARK: Announcement validations
+
+    private func validateAnnouncementTitle(title: String) -> InputValidatorResult {
+        guard !title.isEmpty else {
+            return .invalid("El título del anuncio no puede estar vacío.")
+        }
+
+        guard title.count >= 6 else {
+            return .invalid("El título debe tener al menos 6 caracteres.")
+        }
+
+        guard title.count < 50 else {
+            return .invalid("El título debe tener menos de 50 caracteres.")
+        }
+
+        return .valid
+    }
+    
+    private func validateAnnouncementDescription(description: String) -> InputValidatorResult {
+        guard !description.isEmpty else {
+            return .invalid("La descripción del anuncio no puede estar vacía.")
+        }
+
+        guard description.count >= 10 else {
+            return .invalid("La descripción debe tener al menos 10 caracteres.")
+        }
+
+        guard description.count < 100 else {
+            return .invalid("La descripción debe tener menos de 100 caracteres.")
+        }
+
+        return .valid
+    }
+
+    private func validateAnnouncementPhoneNumber(
+        phoneNumber: String,
+        usePhoneNumber: Bool
+    ) -> InputValidatorResult {
+        guard usePhoneNumber else {
+            return .valid
+        }
+
+        guard !phoneNumber.isEmpty else {
+            return .invalid("El número de teléfono no puede estar vacío.")
+        }
+
+        guard phoneNumber.count >= 8 else {
+            return .invalid("El número de teléfono debe tener al menos 8 caracteres.")
+        }
+
+        guard phoneNumber.count <= 11 else {
+            return .invalid("El número de teléfono debe entre 8 y 11 caracteres.")
         }
 
         return .valid

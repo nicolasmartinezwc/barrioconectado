@@ -20,6 +20,7 @@ struct CreateEventView: View {
     @State private var month: Int = 1
     @State private var year: Int = 2024
     @State private var selectedCategory: EventCategory = .party
+    @State private var isCreatingEvent: Bool = false
     
     var body: some View {
         ZStack {
@@ -184,6 +185,8 @@ struct CreateEventView: View {
                         Spacer()
                     }
                     .onTapGesture {
+                        guard !isCreatingEvent else { return }
+                        isCreatingEvent = true
                         Task { @MainActor in
                             if case .success(_) = await viewModel.startCreateEventFlow(
                                 title: title,
@@ -200,6 +203,7 @@ struct CreateEventView: View {
                                 viewModel.fetchEvents()
                                 showAddEventForm = false
                             }
+                            isCreatingEvent = false
                         }
                     }
                 }

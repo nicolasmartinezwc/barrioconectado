@@ -24,8 +24,8 @@ struct HomePostsList: View {
             } else {
                 ForEach(viewModel.posts.filter { post in
                     guard !standalone else { return true }
-                    let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())?.timeIntervalSince1970 ?? 0
-                    return post.createdAt.timeIntervalSince1970 >= oneWeekAgo
+                    let oneMonthAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date())?.timeIntervalSince1970 ?? 0
+                    return post.createdAt.timeIntervalSince1970 >= oneMonthAgo
                 }) { post in
                     VStack {
                         NavigationLink {
@@ -37,6 +37,9 @@ struct HomePostsList: View {
                     }
                 }
             }
+        }
+        .refreshable {
+            viewModel.fetchPosts()
         }
         .background(standalone ? Constants.Colors.backgroundDarkGrayColor : .clear)
         .navigationTitle(standalone ? "Posteos en \(viewModel.neighbourhoodModel?.name ?? "")" : "")

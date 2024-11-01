@@ -12,7 +12,7 @@ enum Constants {
         static let home: Int = 1
         static let events: Int = 2
         static let alerts: Int = 3
-        static let exchanges: Int = 4
+        static let announcements: Int = 4
         static let configuration: Int = 5
     }
 

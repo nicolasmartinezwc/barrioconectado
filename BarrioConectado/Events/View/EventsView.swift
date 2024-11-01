@@ -176,6 +176,9 @@ struct EventsView: View {
                     }
                 }
             }
+            .refreshable {
+                viewModel.fetchEvents()
+            }
             VStack {
                 Spacer()
                 HStack {

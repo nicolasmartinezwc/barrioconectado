@@ -46,16 +46,18 @@ struct TabBarView: View {
                     }
                     .badge(3)
                     .tag(3)
-                
-                Text("Intercambios")
-                    .tabItem {
-                        Label(
-                            title: { Text("Intercambios") },
-                            icon: { Image(systemName: "repeat") }
-                        )
-                    }
-                    .badge(3)
-                    .tag(4)
+
+                NavigationStack {
+                    AnnouncementsView()
+                }
+                .tabItem {
+                    Label(
+                        title: { Text("Anuncios") },
+                        icon: { Image(systemName: "repeat") }
+                    )
+                }
+                .badge(3)
+                .tag(4)
             }
             .toolbarBackground(.white, for: .tabBar)
             .toolbarBackground(.visible, for: .tabBar)
