@@ -13,9 +13,9 @@ struct UserDataModel: Codable {
     let firstName: String
     let lastName: String?
     let neighbourhood: String?
-    let description: String
+    var description: String
     let provinceId: String?
-    let pictureUrl: String
+    var pictureUrl: String
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -46,7 +46,7 @@ struct UserDataModel: Codable {
         neighbourhood: String? = "",
         provinceId: String = "",
         description: String = "",
-        pictureUrl: String = "user_placeholder"
+        pictureUrl: String = ""
     ) {
         self.id = id
         self.email = email

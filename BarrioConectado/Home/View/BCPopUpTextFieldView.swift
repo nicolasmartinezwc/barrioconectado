@@ -11,8 +11,10 @@ import SwiftUI
 struct BCPopUpTextFieldView: View {
     let title: String
     let placeholder: String
+    let validate: (String) -> InputValidator.InputValidatorResult
     let onTap: (String) -> Void
     @State private var textFieldValue: String = ""
+    @State private var invalidReason: String = ""
 
     var body: some View {
         VStack {
@@ -22,13 +24,27 @@ struct BCPopUpTextFieldView: View {
                     .foregroundStyle(.black)
                 Spacer()
             }
-            .padding(.top)
+            .padding([.top, .horizontal])
+
             TextField(placeholder, text: $textFieldValue)
                 .frame(height: 80)
                 .textFieldStyle(PlainTextFieldStyle())
                 .padding([.horizontal], 4)
                 .cornerRadius(8)
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.init(uiColor: .lightGray)))
+                .padding(.horizontal)
+
+            if !invalidReason.isEmpty {
+                HStack {
+                    Text(invalidReason)
+                        .lineLimit(2)
+                        .font(.subheadline)
+                        .foregroundStyle(.red)
+                    Spacer()
+                }
+                .padding(.top, 10)
+                .padding(.horizontal)
+            }
             HStack {
                 Spacer()
                 RoundedRectangle(cornerRadius: 8)
@@ -40,12 +56,17 @@ struct BCPopUpTextFieldView: View {
                             .foregroundStyle(.white)
                     }
                     .onTapGesture {
-                        onTap(textFieldValue)
+                        switch validate(textFieldValue) {
+                        case .valid:
+                            onTap(textFieldValue)
+                        case .invalid(let reason):
+                            invalidReason = reason
+                        }
                     }
             }
             .padding(.top)
+            .padding(.trailing)
         }
-        .presentationDetents([.height(230)])
-        .padding()
+        .presentationDetents([.height(250)])
     }
 }

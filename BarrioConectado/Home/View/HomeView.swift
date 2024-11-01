@@ -20,9 +20,6 @@ struct HomeView: View {
                 VStack {
                     HomeHeaderView(
                         viewModel: viewModel,
-                        name: "Hola, \(viewModel.userModel?.firstName ?? "") \(viewModel.userModel?.lastName ?? "")",
-                        imageName: "person",
-                        description: viewModel.userModel?.description ?? "",
                         showUpdateDescriptionForm: $showUpdateDescriptionForm
                     )
                     
@@ -66,7 +63,7 @@ struct HomeView: View {
                     }
                     .padding(.leading, 15)
                 }
-                .padding(.top, 75)
+                .padding(.top, 60)
                 .padding(.horizontal)
                 
                 BCDivider()
@@ -123,19 +120,25 @@ struct HomeView: View {
         .sheet(isPresented: $showAddPostForm) {
             BCPopUpTextFieldView(
                 title: "Agregar post",
-                placeholder: "Escribe algo...") { newPost in
-                    viewModel.addPost(text: newPost)
-                    viewModel.fetchPosts()
-                    showAddPostForm = false
-                }
+                placeholder: "Escribe algo..."
+            ) { newPost in
+                InputValidator().validatePost(post: newPost)
+            } onTap: { newPost in
+                viewModel.addPost(text: newPost)
+                viewModel.fetchPosts()
+                showAddPostForm = false
+            }
         }
-        .sheet(isPresented: $showUpdateDescriptionForm) {
+        .sheet(isPresented: $showUpdateDescriptionForm) {            
             BCPopUpTextFieldView(
                 title: "Actualizar descripción",
-                placeholder: "Escribe algo...") { editedDescription in
-                    viewModel.updateDescription(description: editedDescription)
-                    showUpdateDescriptionForm = false
-                }
+                placeholder: "Escribe algo..."
+            ) { newDescription in
+                InputValidator().validateUserDescription(description: newDescription)
+            } onTap: { newDescription in
+                viewModel.updateDescription(description: newDescription)
+                showUpdateDescriptionForm = false
+            }
         }
         .scrollBounceBehavior(.basedOnSize)
         .navigationBarTitleDisplayMode(.inline)

@@ -54,6 +54,60 @@ struct InputValidator {
         ])
     }
 
+    func validateUserDescription(
+        description: String
+    ) -> InputValidatorResult {
+        guard !description.isEmpty else {
+            return .invalid("La descripción no puede estar vacía.")
+        }
+
+        guard description.count >= 3 else {
+            return .invalid("La descripción debe tener al menos 3 caracteres.")
+        }
+
+        guard description.count < 100 else {
+            return .invalid("La descripción debe tener menos de 100 caracteres.")
+        }
+
+        return .valid
+    }
+
+    func validatePost(
+        post: String
+    ) -> InputValidatorResult {
+        guard !post.isEmpty else {
+            return .invalid("El post no puede estar vacío.")
+        }
+
+        guard post.count >= 3 else {
+            return .invalid("La descripción debe tener al menos 3 caracteres.")
+        }
+
+        guard post.count < 300 else {
+            return .invalid("La descripción debe tener menos de 300 caracteres.")
+        }
+
+        return .valid
+    }
+
+    func validateComment(
+        comment: String
+    ) -> InputValidatorResult {
+        guard !comment.isEmpty else {
+            return .invalid("El comentario no puede estar vacío.")
+        }
+
+        guard comment.count >= 3 else {
+            return .invalid("El comentario debe tener al menos 3 caracteres.")
+        }
+
+        guard comment.count < 300 else {
+            return .invalid("El comentario debe tener menos de 300 caracteres.")
+        }
+
+        return .valid
+    }
+
     // MARK: Evaluator
 
     private func evaluateValidationResults(_ results: [InputValidatorResult]) -> InputValidatorResult {

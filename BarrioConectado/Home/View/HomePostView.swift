@@ -26,6 +26,11 @@ struct HomePostView: View {
                     }
                     .padding(.bottom, 5)
                     HStack {
+                        Image(uiImage: viewModel.cachedImagesForPosts[post.id]?.image ?? .init(resource: .avatar))
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                        Spacer()
                         let dateComponents = post.createdAt.components
                         if let day = dateComponents.day,
                            let month = dateComponents.month,
@@ -81,6 +86,11 @@ struct HomePostView: View {
                                     }
                                     .padding(.bottom, 5)
                                     HStack {
+                                        Image(uiImage: viewModel.cachedImagesForComments[comment.id]?.image ?? .init(resource: .avatar))
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                            .clipShape(Circle())
+                                            .padding(.trailing, 5)
                                         let dateComponents = comment.createdAt.components
                                         if let day = dateComponents.day,
                                            let month = dateComponents.month,
@@ -105,6 +115,13 @@ struct HomePostView: View {
                                     }
                                 }
                                 .padding()
+                                .onAppear {
+                                    Task { @MainActor in
+                                        if viewModel.cachedImagesForComments[comment.id]?.image == nil {
+                                            viewModel.fetchImage(for: comment)
+                                        }
+                                    }
+                                }
                                 BCDivider()
                             }
                         }
@@ -147,17 +164,26 @@ struct HomePostView: View {
                     await viewModel.fetchComments(for: post)
                 }
             }
+
+            Task { @MainActor in
+                if viewModel.cachedImagesForPosts[post.id]?.image == nil {
+                    viewModel.fetchImage(for: post)
+                }
+            }
         }
         .sheet(isPresented: $showAddCommentForm) {
             BCPopUpTextFieldView(
                 title: "Agregar comentario",
-                placeholder: "Escribe algo...") { newComment in
-                    Task { @MainActor in
-                        await viewModel.addComment(text: newComment, for: post)
-                        await viewModel.fetchComments(for: post)
-                        showAddCommentForm = false
-                    }
+                placeholder: "Escribe algo...")
+            { newComment in
+                InputValidator().validateComment(comment: newComment)
+            } onTap: { newComment in
+                Task { @MainActor in
+                    await viewModel.addComment(text: newComment, for: post)
+                    await viewModel.fetchComments(for: post)
+                    showAddCommentForm = false
                 }
+            }
         }
         .background(standalone ? Constants.Colors.backgroundDarkGrayColor : .clear)
         .scrollBounceBehavior(.basedOnSize)
@@ -175,7 +201,7 @@ struct HomePostView: View {
         neighbourhood: "",
         createdAt: Date(),
         ownerName: "",
-        ownerPictureUrl: nil
+        ownerPictureUrl: ""
     )
     return HomePostView(viewModel: HomeViewModel(), post: model, standalone: false)
 }

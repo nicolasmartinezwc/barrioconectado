@@ -6,17 +6,23 @@
 //
 
 import Foundation
+import PhotosUI
+import _PhotosUI_SwiftUI
+import FirebaseStorage
 
 class HomeViewModel: ObservableObject {
     // MARK: Properties
-    
     @Published var userModel: UserDataModel?
     @Published var neighbourhoodModel: NeighbourhoodModel?
     @Published var posts: [HomePostModel] = []
     @Published var errorMessage: String?
     @Published var showOnboarding: Bool = false
     @Published var comments: [String: [HomePostComment]] = [:]
-    
+    @Published var image: UIImage = .init(resource: .avatar)
+    @Published var isLoadingImage: Bool = false
+    @Published var cachedImagesForPosts: [String: (owner: String, image: UIImage)] = [:]
+    @Published var cachedImagesForComments: [String: (owner: String, image: UIImage)] = [:]
+
     private var uid: String? {
         AuthManager.instance.currentUserUID
     }
@@ -46,7 +52,7 @@ class HomeViewModel: ObservableObject {
     ]
     
     // MARK: Methods
-    
+
     func showErrorMessage(_ message: String) {
         errorMessage = message
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
@@ -73,6 +79,7 @@ class HomeViewModel: ObservableObject {
                 if !showOnboarding {
                     fetchNeighbourhoodData()
                 }
+                downloadProfilePicture()
             case .failure(let error):
                 if retries > 0 {
                     try? await Task.sleep(nanoseconds: UInt64(2_000_000_000))
@@ -88,12 +95,13 @@ class HomeViewModel: ObservableObject {
     func updateDescription(
         description: String
     ) {
-        guard let uid else {
+        guard var userModel else {
             return
         }
+        userModel.description = description
         Task { [weak self] in
             guard let self else { return }
-            let result = await DatabaseManager.instance.updateDescription(description: description, for: uid)
+            let result = await DatabaseManager.instance.updateUser(userData: userModel)
             switch result {
             case .success(let userModel):
                 self.userModel = userModel
@@ -102,7 +110,7 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
-    
+
     @MainActor
     func fetchNeighbourhoodData() {
         guard let neighbourhood = userModel?.neighbourhood else {
@@ -262,6 +270,159 @@ class HomeViewModel: ObservableObject {
                 self.comments[post.id] = comments
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)
+            }
+        }
+    }
+
+    @MainActor
+    func uploadImage(
+        newImage: PhotosPickerItem?
+    ) {
+        Task { [weak self] in
+            guard let self else {
+                return
+            }
+            
+            do {
+                guard var userModel else {
+                    throw DatabaseError.UserNotFound
+                }
+                
+                guard let newImage else {
+                    throw BCError.UploadedImageIsNil
+                }
+                
+                guard let imageAsData = try await newImage.loadTransferable(type: Data.self) else {
+                    throw BCError.ImageLoadFailed
+                }
+                
+                guard let fileType = imageAsData.getFileType() else {
+                    throw BCError.NotAllowedImageType
+                }
+                
+                guard imageAsData.sizeIsLessThan10MB() else {
+                    throw BCError.ImageSizeIsBiggerThan10MB
+                }
+                
+                isLoadingImage = true
+                
+                let storage = Storage.storage()
+                let storageRef = storage.reference()
+                let previousPhotoRef = storageRef.child("images/\(userModel.id)/\(userModel.pictureUrl)")
+                let newImageName = "\(UUID().uuidString).\(fileType)"
+                let newPhotoRef = storageRef.child("images/\(userModel.id)/\(newImageName)")
+                
+                // Update new photo
+                _ = try await newPhotoRef.putDataAsync(imageAsData)
+                
+                // Download previous photo
+                if let _ = try? await previousPhotoRef.getMetadata() {
+                    // Delete the previous photo if it exists
+                    try await previousPhotoRef.delete()
+                }
+                
+                // Update user's picture URL
+                userModel.pictureUrl = newImageName
+                let updateUserResult = await DatabaseManager.instance.updateUser(userData: userModel)
+                
+                // Update the picture of each post of the owner
+                try await DatabaseManager.instance.updatePictureOfPostsAndComments(newImageName: newImageName, for: userModel.id)
+    
+                switch updateUserResult {
+                case .success(let userModel):
+                    self.userModel = userModel
+                    if let image = UIImage(data: imageAsData) {
+                        self.image = image
+                        updateCachedImages(newImage: image, for: userModel.id)
+                    } else {
+                        downloadProfilePicture()
+                    }
+                case .failure(let error):
+                    throw error
+                }
+                isLoadingImage = false
+            } catch {
+                isLoadingImage = false
+                showErrorMessage(error.spanishDescription)
+            }
+        }
+    }
+
+    @MainActor
+    func updateCachedImages(
+        newImage: UIImage,
+        for uid: String
+    ) {
+        for (postId, data) in cachedImagesForPosts where data.owner == uid {
+            cachedImagesForPosts[postId] = (data.owner, newImage)
+        }
+
+        for (commentId, data) in cachedImagesForComments where data.owner == uid {
+            cachedImagesForComments[commentId] = (data.owner, newImage)
+        }
+    }
+
+    @MainActor
+    func downloadProfilePicture() {
+        isLoadingImage = true
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                guard let userModel else {
+                    throw DatabaseError.UserNotFound
+                }
+                guard !userModel.pictureUrl.isEmpty else {
+                    throw BCError.ImageIsEmpty
+                }
+                let storage = Storage.storage()
+                let storageRef = storage.reference()
+                let photoRef = storageRef.child("images/\(userModel.id)/\(userModel.pictureUrl)")
+                if let downloadedImage = try? await photoRef.data(maxSize: 10 * 1024 * 1024),
+                   let image = UIImage(data: downloadedImage) {
+                    self.image = image
+                }
+                isLoadingImage = false
+            } catch {
+                print(error)
+                isLoadingImage = false
+            }
+        }
+    }
+
+    @MainActor
+    func fetchImage(
+        for post: HomePostModel
+    ){
+        Task { [weak self] in
+            let storage = Storage.storage()
+            let storageRef = storage.reference()
+            let photoRef = storageRef.child("images/\(post.owner)/\(post.ownerPictureUrl)")
+            do {
+                let downloadedImage = try await photoRef.data(maxSize: 10 * 1024 * 1024)
+                if let image = UIImage(data: downloadedImage) {
+                    self?.cachedImagesForPosts[post.id] = (post.owner, image)
+                }
+            } catch {
+                print(error)
+            }
+        }
+    }
+
+    @MainActor
+    func fetchImage(
+        for comment: HomePostComment
+    ){
+        Task { [weak self] in
+            let storage = Storage.storage()
+            let storageRef = storage.reference()
+            let photoRef = storageRef.child("images/\(comment.owner)/\(comment.ownerPictureUrl)")
+            do {
+                let downloadedImage = try await photoRef.data(maxSize: 10 * 1024 * 1024)
+                if let image = UIImage(data: downloadedImage) {
+                    self?.cachedImagesForComments[comment.id] = (comment.owner, image)
+                }
+            } catch {
+                print(error)
             }
         }
     }

@@ -56,18 +56,6 @@ struct TabBarView: View {
                     }
                     .badge(3)
                     .tag(4)
-                
-                Text("Logout (Configuracion)")
-                    .onTapGesture {
-                        AuthManager.instance.logOut()
-                    }
-                    .tabItem {
-                        Label(
-                            title: { Text("Configuración") },
-                            icon: { Image(systemName: "line.3.horizontal") }
-                        )
-                    }
-                    .tag(5)
             }
             .toolbarBackground(.white, for: .tabBar)
             .toolbarBackground(.visible, for: .tabBar)

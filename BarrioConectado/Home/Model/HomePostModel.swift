@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct HomePostModel: Decodable, Identifiable {
+struct HomePostModel: Decodable, Identifiable, Hashable {
     let id: String
     let text: String
     var amountOfLikes: Int
@@ -18,7 +18,7 @@ struct HomePostModel: Decodable, Identifiable {
     let neighbourhood: String
     let createdAt: Date
     let ownerName: String
-    let ownerPictureUrl: String?
+    var ownerPictureUrl: String
 
     var liked: Bool {
         guard let uid = AuthManager.instance.currentUserUID else { return false }
@@ -37,7 +37,7 @@ struct HomePostModel: Decodable, Identifiable {
         let createdAt = try container.decode(Double.self, forKey: .createdAt)
         self.createdAt = Date(timeIntervalSince1970: TimeInterval(createdAt))
         self.ownerName = try container.decode(String.self, forKey: .ownerName)
-        self.ownerPictureUrl = try container.decodeIfPresent(String.self, forKey: .ownerPictureUrl)
+        self.ownerPictureUrl = try container.decode(String.self, forKey: .ownerPictureUrl)
     }
 
     init(
@@ -50,7 +50,7 @@ struct HomePostModel: Decodable, Identifiable {
         neighbourhood: String,
         createdAt: Date,
         ownerName: String,
-        ownerPictureUrl: String?
+        ownerPictureUrl: String
     ) {
         self.id = id
         self.text = text

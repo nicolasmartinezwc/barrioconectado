@@ -11,7 +11,7 @@ struct HomePostComment: Codable, Identifiable {
     let id: String
     let post: String
     let text: String
-    let ownerPictureUrl: String?
+    let ownerPictureUrl: String
     let owner: String
     let ownerName: String
     let createdAt: Date
@@ -29,7 +29,7 @@ struct HomePostComment: Codable, Identifiable {
         self.post = try container.decode(String.self, forKey: .post)
         self.text = try container.decode(String.self, forKey: .text)
         self.owner = try container.decode(String.self, forKey: .owner)
-        self.ownerPictureUrl = try container.decodeIfPresent(String.self, forKey: .ownerPictureUrl)
+        self.ownerPictureUrl = try container.decode(String.self, forKey: .ownerPictureUrl)
         self.ownerName = try container.decode(String.self, forKey: .ownerName)
         let createdAt = try container.decode(Double.self, forKey: .createdAt)
         self.createdAt = Date(timeIntervalSince1970: TimeInterval(createdAt))

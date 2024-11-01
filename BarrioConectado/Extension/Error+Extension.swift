@@ -13,6 +13,14 @@ extension Error {
             return databaseError.spanishDescription
         }
 
+        if let bcError = self as? BCError {
+            return bcError.spanishDescription
+        }
+
+        if let networkingError = self as? BCNetworkingError {
+            return networkingError.spanishDescription
+        }
+
         switch localizedDescription {
         case "The password must be 6 characters long or more.":
             return "La contraseña debe tener al menos 6 caracteres."
@@ -30,16 +38,34 @@ extension Error {
     }
 }
 
-enum BCError {
+enum BCError: Error {
     case EmptyProvinces
     case EmptyNeighbourhoods(String)
-    
+    case UploadedImageIsNil
+    case ImageLoadFailed
+    case NotAllowedImageType
+    case ImageSizeIsBiggerThan10MB
+    case ErrorWhileDownloadingImage
+    case ImageIsEmpty
+
     var spanishDescription: String {
         switch self {
         case .EmptyProvinces:
             return "No se encontraron provincias."
         case .EmptyNeighbourhoods(let province):
             return "No se encontraron barrios en \(province)."
+        case .ImageLoadFailed:
+            return "Ocurrió un error al importar la imagen."
+        case .NotAllowedImageType:
+            return "El archivo debe ser de tipo .JPEG o .PNG"
+        case .UploadedImageIsNil:
+            return "La imagen está vacía."
+        case .ImageSizeIsBiggerThan10MB:
+            return "El tamaño de la imagen debe ser menor a 10 MB."
+        case .ErrorWhileDownloadingImage:
+            return "Ocurrió un error al descargar la imagen."
+        case .ImageIsEmpty:
+            return ""
         }
     }
 }

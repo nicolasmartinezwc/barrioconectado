@@ -224,7 +224,7 @@ class DatabaseManager {
                         "amount_of_likes": 0,
                         "amount_of_comments": 0,
                         "owner_name": user.lastName != nil ?  "\(user.firstName) \(user.lastName ?? "")" : "\(user.firstName)",
-                        "owner_picture_url": user.pictureUrl ?? ""
+                        "owner_picture_url": user.pictureUrl
                     ],
                     merge: true
                 )
@@ -250,7 +250,7 @@ class DatabaseManager {
                         "liked_by": [],
                         "owner": user.id,
                         "owner_name": user.lastName != nil ?  "\(user.firstName) \(user.lastName ?? "")" : "\(user.firstName)",
-                        "owner_picture_url": user.pictureUrl ?? "",
+                        "owner_picture_url": user.pictureUrl,
                         "text": text,
                         "post": post.id
                     ],
@@ -293,21 +293,19 @@ class DatabaseManager {
 
     // MARK: Update
 
-    func updateDescription(
-        description: String,
-        for uid: String
+    func updateUser(
+        userData: UserDataModel
     ) async -> Result<UserDataModel, Error> {
         do {
-            let userRef = db.collection("users").document(uid)
-            try await userRef.setData(
-                [
-                    "description": description
-                ],
-                merge: true
-            )
-            let resultAsDictionary = try await userRef.getDocument().data()
-            let resultAsJson = try JSONSerialization.data(withJSONObject: resultAsDictionary)
-            let userData = try JSONDecoder().decode(UserDataModel.self, from: resultAsJson)
+            try await db.collection("users")
+                .document(userData.id)
+                .setData(
+                    [
+                        "description": userData.description,
+                        "picture_url": userData.pictureUrl
+                    ],
+                    merge: true
+                )
             return .success(userData)
         } catch {
             return .failure(error)
@@ -369,6 +367,40 @@ class DatabaseManager {
             return .success(event)
         } catch {
             return .failure(error)
+        }
+    }
+    
+    func updatePictureOfPostsAndComments (
+        newImageName: String,
+        for uid: String
+    ) async throws {
+        do {
+            let batch = db.batch()
+            let postsQuerySnapshot = try await db.collection("posts")
+                .whereField("owner", isEqualTo: uid)
+                .getDocuments()
+            for document in postsQuerySnapshot.documents {
+                let postRef = db.collection("posts").document(document.documentID)
+                batch.updateData([
+                    "owner_picture_url": newImageName
+                ], forDocument: postRef)
+            }
+            
+            let commentsQuerySnapshot = try await db.collection("comments")
+                .whereField("owner", isEqualTo: uid)
+                .getDocuments()
+            
+            for document in commentsQuerySnapshot.documents {
+                let commentRef = db.collection("comments").document(document.documentID)
+                batch.updateData([
+                    "owner_picture_url": newImageName
+                ], forDocument: commentRef)
+            }
+            
+            try await batch.commit()
+
+        } catch {
+            throw error
         }
     }
 }
