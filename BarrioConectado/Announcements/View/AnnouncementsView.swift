@@ -169,5 +169,6 @@ struct AnnouncementsView: View {
             )
         }
         .navigationTitle("Anuncios")
+        .background(Constants.Colors.backgroundDarkGrayColor)
     }
 }

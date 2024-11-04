@@ -18,9 +18,13 @@ struct AlertsView: View {
                     ProgressView()
                         .padding(.top)
                 } else if viewModel.alerts.isEmpty {
-                    Text("Aún no hubo alertas tu barrio.")
-                        .font(.system(size: 18))
-                        .foregroundStyle(.black)
+                    ContentUnavailableView(
+                        "Aún no hubo alertas tu barrio...",
+                        systemImage: "face.smiling.inverse",
+                        description: Text("No dudes en crear una cuando la situación lo amerite")
+                            .font(.system(size: 18))
+                    )
+                    .padding(.top, 50)
                 } else {
                     BCDivider()
                     ForEach(viewModel.alerts) { alert in

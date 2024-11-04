@@ -140,12 +140,15 @@ class HomeViewModel: ObservableObject {
             return
         }
         Task { [weak self] in
-            guard let self else { return }
+            guard let self
+            else {
+                self?.isLoadingPosts = false
+                return
+            }
             let result = await DatabaseManager.instance.searchPosts(for: neighbourhood)
             switch result {
             case .success(let posts):
                 self.posts = posts
-                return
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)
             }

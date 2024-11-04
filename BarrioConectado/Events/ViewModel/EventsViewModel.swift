@@ -76,7 +76,11 @@ class EventsViewModel: ObservableObject {
             let result = await DatabaseManager.instance.searchEvents(for: neighbourhood)
             switch result {
             case .success(let events):
-                guard !events.isEmpty else { return }
+                guard !events.isEmpty 
+                else {
+                    isLoadingEvents = false
+                    return
+                }
                 self.events = events
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)

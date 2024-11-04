@@ -33,7 +33,11 @@ class AnnouncementsViewModel: ObservableObject {
             let result = await DatabaseManager.instance.searchAnnouncements(for: neighbourhood)
             switch result {
             case .success(let announcements):
-                guard !announcements.isEmpty else { return }
+                guard !announcements.isEmpty 
+                else {
+                    isLoadingAnnouncements = false
+                    return
+                }
                 self.announcements = announcements
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)

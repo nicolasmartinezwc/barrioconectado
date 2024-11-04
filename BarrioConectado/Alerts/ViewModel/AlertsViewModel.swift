@@ -32,7 +32,11 @@ class AlertsViewModel: ObservableObject {
             let result = await DatabaseManager.instance.searchAlerts(for: neighbourhood)
             switch result {
             case .success(let alerts):
-                guard !alerts.isEmpty else { return }
+                guard !alerts.isEmpty 
+                else {
+                    self?.isLoadingAlerts = false
+                    return
+                }
                 self?.alerts = alerts
             case .failure(let error):
                 self?.showErrorMessage(error.spanishDescription)
