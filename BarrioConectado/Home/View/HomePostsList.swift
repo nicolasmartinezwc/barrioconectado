@@ -13,7 +13,10 @@ struct HomePostsList: View {
 
     var body: some View {
         ScrollView {
-            if viewModel.posts.isEmpty {
+            if viewModel.isLoadingPosts && viewModel.posts.isEmpty {
+                ProgressView()
+                    .padding(.top)
+            } else if viewModel.posts.isEmpty {
                 ContentUnavailableView(
                     "Parece que no hubo posts esta semana...",
                     systemImage: "face.smiling.inverse",

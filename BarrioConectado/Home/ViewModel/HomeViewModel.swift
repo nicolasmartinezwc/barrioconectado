@@ -22,6 +22,8 @@ class HomeViewModel: ObservableObject {
     @Published var isLoadingImage: Bool = false
     @Published var cachedImagesForPosts: [String: (owner: String, image: UIImage)] = [:]
     @Published var cachedImagesForComments: [String: (owner: String, image: UIImage)] = [:]
+    @Published var isLoadingPosts: Bool = false
+    @Published var isLoadingComments: Bool = false
 
     private var uid: String? {
         AuthManager.instance.currentUserUID
@@ -132,7 +134,9 @@ class HomeViewModel: ObservableObject {
     
     @MainActor
     func fetchPosts() {
+        isLoadingPosts = true
         guard let neighbourhood = userModel?.neighbourhood else {
+            isLoadingPosts = false
             return
         }
         Task { [weak self] in
@@ -145,6 +149,7 @@ class HomeViewModel: ObservableObject {
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)
             }
+            isLoadingPosts = false
         }
     }
     
@@ -256,8 +261,13 @@ class HomeViewModel: ObservableObject {
     func fetchComments(
         for post: HomePostModel
     ) async {
+        isLoadingComments = true
         Task { [weak self] in
-            guard let self else { return }
+            guard let self 
+            else {
+                self?.isLoadingComments = false
+                return
+            }
             let result = await DatabaseManager.instance.searchComments(for: post)
             switch result {
             case .success(let comments):
@@ -271,6 +281,7 @@ class HomeViewModel: ObservableObject {
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)
             }
+            isLoadingComments = false
         }
     }
 

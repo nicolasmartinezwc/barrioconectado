@@ -49,6 +49,12 @@ struct HomeView: View {
                     HStack {
                         NavigationLink {
                             HomePostsList(viewModel: viewModel, standalone: true)
+                                .toolbarBackground(
+                                    Constants.Colors.appColor,
+                                    for: .navigationBar
+                                )
+                                .toolbarBackground(.visible, for: .navigationBar)
+                                .toolbarColorScheme(.dark, for: .navigationBar)
                         } label: {
                             Text("Ver todos")
                                 .foregroundStyle(.black)

@@ -14,7 +14,10 @@ struct EventsView: View {
     var body: some View {
         ZStack {
             ScrollView {
-                if viewModel.events.isEmpty {
+                if viewModel.isLoadingEvents && viewModel.events.isEmpty {
+                    ProgressView()
+                        .padding(.top)
+                } else if viewModel.events.isEmpty {
                     ContentUnavailableView(
                         "No hay eventos planeados aún...",
                         systemImage: "face.smiling.inverse",
@@ -190,7 +193,7 @@ struct EventsView: View {
                             .fill(Constants.Colors.appColor)
                             .frame(width: 140, height: 30)
                             .overlay {
-                                Text("Agregar Evento")
+                                Text("Agregar evento")
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundStyle(.white)
                             }

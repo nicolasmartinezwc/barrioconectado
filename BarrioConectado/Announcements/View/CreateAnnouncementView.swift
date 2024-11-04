@@ -38,7 +38,6 @@ struct CreateAnnouncementView: View {
                     .padding([.bottom, .horizontal])
                 }
                 .background(Color(UIColor.secondarySystemBackground))
-                .padding(.top, 10)
                 .padding(.bottom, -10)
                 
                 Form {

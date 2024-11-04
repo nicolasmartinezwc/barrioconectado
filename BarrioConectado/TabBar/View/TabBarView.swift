@@ -27,6 +27,12 @@ struct TabBarView: View {
                 
                 NavigationStack {
                     EventsView()
+                        .toolbarBackground(
+                            Constants.Colors.appColor,
+                            for: .navigationBar
+                        )
+                        .toolbarBackground(.visible, for: .navigationBar)
+                        .toolbarColorScheme(.dark, for: .navigationBar)
                 }
                 .tabItem {
                     Label(
@@ -37,18 +43,31 @@ struct TabBarView: View {
                 .badge(0)
                 .tag(2)
 
-                Text("Alertas")
-                    .tabItem {
-                        Label(
-                            title: { Text("Alertas") },
-                            icon: { Image(systemName: "hazardsign.fill") }
+                NavigationStack {
+                    AlertsView()
+                        .toolbarBackground(
+                            Constants.Colors.appColor,
+                            for: .navigationBar
                         )
-                    }
-                    .badge(3)
-                    .tag(3)
+                        .toolbarBackground(.visible, for: .navigationBar)
+                        .toolbarColorScheme(.dark, for: .navigationBar)
+                }
+                .tabItem {
+                    Label(
+                        title: { Text("Alertas") },
+                        icon: { Image(systemName: "hazardsign.fill") }
+                    )
+                }
+                .tag(3)
 
                 NavigationStack {
                     AnnouncementsView()
+                        .toolbarBackground(
+                            Constants.Colors.appColor,
+                            for: .navigationBar
+                        )
+                        .toolbarBackground(.visible, for: .navigationBar)
+                        .toolbarColorScheme(.dark, for: .navigationBar)
                 }
                 .tabItem {
                     Label(

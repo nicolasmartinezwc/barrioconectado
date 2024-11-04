@@ -78,6 +78,7 @@ enum DatabaseError: Error {
     case ErrorWhileRegisteringEvent
     case NeighbourhoodNotFound
     case ErrorWhileRegisteringAnnouncement
+    case ErrorWhileRegisteringAlert
 
     var spanishDescription: String {
         switch self {
@@ -95,6 +96,8 @@ enum DatabaseError: Error {
             return "Ocurrió un error al crear el evento."
         case .ErrorWhileRegisteringAnnouncement:
             return "Ocurrió un error al crear el anuncio."
+        case .ErrorWhileRegisteringAlert:
+            return "Ocurrió un error al crear la alerta."
         }
     }
 }

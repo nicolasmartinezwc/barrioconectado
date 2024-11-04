@@ -158,6 +158,12 @@ struct HomePostView: View {
                 }
             }
         }
+        .toolbarBackground(
+            Constants.Colors.appColor,
+            for: .navigationBar
+        )
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
             if standalone {
                 Task { @MainActor in

@@ -14,7 +14,10 @@ struct AnnouncementsView: View {
     var body: some View {
         ZStack {
             ScrollView {
-                if viewModel.announcements.isEmpty {
+                if viewModel.isLoadingAnnouncements && viewModel.announcements.isEmpty {
+                    ProgressView()
+                        .padding(.top)
+                } else if viewModel.announcements.isEmpty {
                     ContentUnavailableView(
                         "No hay anuncios aún...",
                         systemImage: "face.smiling.inverse",
@@ -147,9 +150,9 @@ struct AnnouncementsView: View {
                     } label: {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Constants.Colors.appColor)
-                            .frame(width: 180, height: 30)
+                            .frame(width: 140, height: 30)
                             .overlay {
-                                Text("Agregar Anuncio")
+                                Text("Agregar anuncio")
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundStyle(.white)
                             }

@@ -13,12 +13,12 @@ class OnBoardingViewModel: ObservableObject {
         OnBoardingModel(
             imageName: "onboarding1",
             imageSize: CGSize(width: 200, height: 150),
-            text: "Barrio Conectado es una plataforma que conecte de manera sencilla, segura y eficaz a los vecinos de un mismo barrio."
+            text: "Barrio Conectado es una plataforma que conecta de manera sencilla, segura y eficaz a los vecinos de un mismo barrio."
         ),
         OnBoardingModel(
             imageName: "onboarding2",
             imageSize: CGSize(width: 200, height: 150),
-            text: "Podrás conocer nuevos vecinos, enviar alertas, organizar eventos, intercambiar artículos y mucho más."
+            text: "Podrás conocer nuevos vecinos, enviar alertas, organizar eventos, buscar trabajos, intercambiar artículos y mucho más."
         ),
         OnBoardingModel(
             imageName: "onboarding3",

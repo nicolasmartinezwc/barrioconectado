@@ -11,6 +11,7 @@ class EventsViewModel: ObservableObject {
     private let inputValidator = InputValidator()
     @Published var errorMessage: String?
     @Published var events: [EventModel] = []
+    @Published var isLoadingEvents: Bool = false
     
     init() {
         Task { [weak self] in
@@ -63,11 +64,13 @@ class EventsViewModel: ObservableObject {
 
     @MainActor
     func fetchEvents() {
+        isLoadingEvents = true
         Task { [weak self] in
             guard let self,
             let user = await getUserData(),
                   let neighbourhood = user.neighbourhood
             else {
+                self?.isLoadingEvents = false
                 return
             }
             let result = await DatabaseManager.instance.searchEvents(for: neighbourhood)
@@ -78,6 +81,7 @@ class EventsViewModel: ObservableObject {
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)
             }
+            self.isLoadingEvents = false
         }
     }
 

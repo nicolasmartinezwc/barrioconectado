@@ -139,6 +139,27 @@ class DatabaseManager {
         }
     }
 
+    func searchAlerts(
+        for neighbourhood: String
+    ) async -> Result<[AlertModel], Error> {
+        do {
+            let alertsAsDocuments = try await db.collection("alerts")
+                .whereField("neighbourhood", isEqualTo: neighbourhood)
+                .order(by: "created_at", descending: true)
+                .getDocuments()
+            var alerts = [AlertModel]()
+            try alertsAsDocuments.documents.forEach { alertAsDocument in
+                let alertAsJson = alertAsDocument.data()
+                let alertAsData = try JSONSerialization.data(withJSONObject: alertAsJson)
+                let alert = try JSONDecoder().decode(AlertModel.self, from: alertAsData)
+                alerts.append(alert)
+            }
+            return .success(alerts)
+        } catch {
+            return .failure(error)
+        }
+    }
+
     func searchAnnouncements(
         for neighbourhood: String
     ) async -> Result<[AnnouncementModel], Error> {
@@ -334,6 +355,31 @@ class DatabaseManager {
                     merge: true
                 )
             return .success(announcement)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    func insertAlert(
+        alert: AlertModel
+    ) async -> Result<AlertModel, Error> {
+        do {
+            try await db.collection("alerts")
+                .document(alert.id)
+                .setData(
+                    [
+                        "id": alert.id,
+                        "created_at": alert.createdAt.timeIntervalSince1970,
+                        "description": alert.description,
+                        "category": alert.category.rawValue,
+                        "location": alert.location,
+                        "neighbourhood": alert.neighbourhood,
+                        "creator": alert.creator,
+                        "creator_name": alert.creatorName
+                    ],
+                    merge: true
+                )
+            return .success(alert)
         } catch {
             return .failure(error)
         }

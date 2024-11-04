@@ -11,6 +11,7 @@ class AnnouncementsViewModel: ObservableObject {
     private let inputValidator = InputValidator()
     @Published var announcements: [AnnouncementModel] = []
     @Published var errorMessage: String?
+    @Published var isLoadingAnnouncements: Bool = false
 
     init() {
         Task { [weak self] in
@@ -20,11 +21,13 @@ class AnnouncementsViewModel: ObservableObject {
 
     @MainActor
     func fetchAnnouncements() {
+        isLoadingAnnouncements = true
         Task { [weak self] in
             guard let self,
                   let user = await getUserData(),
                   let neighbourhood = user.neighbourhood
             else {
+                self?.isLoadingAnnouncements = false
                 return
             }
             let result = await DatabaseManager.instance.searchAnnouncements(for: neighbourhood)
@@ -35,6 +38,7 @@ class AnnouncementsViewModel: ObservableObject {
             case .failure(let error):
                 showErrorMessage(error.spanishDescription)
             }
+            isLoadingAnnouncements = false
         }
     }
 

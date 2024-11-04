@@ -67,6 +67,16 @@ struct InputValidator {
         ])
     }
 
+    func validateAlertData(
+        description: String,
+        location: String
+    ) -> InputValidatorResult {
+        evaluateValidationResults([
+            validateAlertDescription(description: description),
+            validateAlertLocation(location: location)
+        ])
+    }
+
     func validateUserDescription(
         description: String
     ) -> InputValidatorResult {
@@ -329,4 +339,39 @@ struct InputValidator {
 
         return .valid
     }
+    
+    // MARK: Alert validations
+
+    private func validateAlertDescription(description: String) -> InputValidatorResult {
+        guard !description.isEmpty else {
+            return .invalid("La descripción de la alerta no puede estar vacía.")
+        }
+
+        guard description.count >= 6 else {
+            return .invalid("La descripción debe tener al menos 6 caracteres.")
+        }
+
+        guard description.count < 300 else {
+            return .invalid("La descripción debe tener menos de 300 caracteres.")
+        }
+
+        return .valid
+    }
+
+    private func validateAlertLocation(location: String) -> InputValidatorResult {
+        guard !location.isEmpty else {
+            return .invalid("La ubicación de la alerta no puede estar vacía.")
+        }
+
+        guard location.count >= 6 else {
+            return .invalid("La descripción debe tener al menos 6 caracteres.")
+        }
+
+        guard location.count < 50 else {
+            return .invalid("La descripción debe tener menos de 50 caracteres.")
+        }
+
+        return .valid
+    }
+
 }
