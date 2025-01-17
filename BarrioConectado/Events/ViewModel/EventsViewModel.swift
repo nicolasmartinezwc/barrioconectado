@@ -18,7 +18,7 @@ class EventsViewModel: ObservableObject {
             await self?.fetchEvents()
         }
     }
-
+    
     @MainActor
     func startCreateEventFlow(
         title: String,
@@ -61,13 +61,13 @@ class EventsViewModel: ObservableObject {
             return .failure(DatabaseError.ErrorWhileRegisteringEvent)
         }
     }
-
+    
     @MainActor
     func fetchEvents() {
         isLoadingEvents = true
         Task { [weak self] in
             guard let self,
-            let user = await getUserData(),
+                  let user = await getUserData(),
                   let neighbourhood = user.neighbourhood
             else {
                 self?.isLoadingEvents = false
@@ -76,7 +76,7 @@ class EventsViewModel: ObservableObject {
             let result = await DatabaseManager.instance.searchEvents(for: neighbourhood)
             switch result {
             case .success(let events):
-                guard !events.isEmpty 
+                guard !events.isEmpty
                 else {
                     isLoadingEvents = false
                     return
@@ -88,7 +88,7 @@ class EventsViewModel: ObservableObject {
             self.isLoadingEvents = false
         }
     }
-
+    
     @MainActor
     private func createEvent(
         title: String,
@@ -107,13 +107,17 @@ class EventsViewModel: ObservableObject {
         else {
             return .failure(DatabaseError.UserNotFound)
         }
-
+        
         guard let neighbourhood = user.neighbourhood
         else {
             return .failure(DatabaseError.NeighbourhoodNotFound)
         }
-
-        let dateComponents = DateComponents(year: year, month: month, day: day)
+        
+        var dateComponents = DateComponents(year: year, month: month, day: day)
+        if !allDay {
+            dateComponents.hour = startsAtHours
+            dateComponents.minute = startsAtMinutes
+        }
         let date = Calendar.current.date(from: dateComponents) ?? Date()
         let event = EventModel(
             id: UUID().uuidString,
@@ -132,7 +136,7 @@ class EventsViewModel: ObservableObject {
         )
         return await DatabaseManager.instance.insertEvent(event: event)
     }
-
+    
     private func getUserData() async -> UserDataModel? {
         guard let uid = AuthManager.instance.currentUserUID else { return nil }
         let result = await DatabaseManager.instance.searchUserData(for: uid)
@@ -143,7 +147,7 @@ class EventsViewModel: ObservableObject {
             return nil
         }
     }
-
+    
     @MainActor
     func toggleAssistance(
         for event: EventModel
@@ -168,9 +172,8 @@ class EventsViewModel: ObservableObject {
                 showErrorMessage(error.spanishDescription)
             }
         }
-        
     }
-
+    
     func showErrorMessage(_ message: String) {
         errorMessage = message
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in

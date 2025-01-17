@@ -249,7 +249,7 @@ struct InputValidator {
         }
 
         guard location.count >= 6 else {
-            return .invalid("La descripción debe tener al menos 6 caracteres.")
+            return .invalid("La ubicación debe tener al menos 6 caracteres.")
         }
 
         guard location.count < 100 else {
