@@ -354,7 +354,7 @@ class HomeViewModel: ObservableObject {
                 switch updateUserResult {
                 case .success(let userModel):
                     self.userModel = userModel
-                    if let image = UIImage(data: imageAsData) {
+                    if let image = UIImage(data: croppedImage) {
                         self.image = image
                         updateCachedImages(newImage: image, for: userModel.id)
                     } else {
