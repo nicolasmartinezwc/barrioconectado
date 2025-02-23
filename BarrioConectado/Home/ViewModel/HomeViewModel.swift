@@ -65,7 +65,8 @@ class HomeViewModel: ObservableObject {
     /// Fetches user data from the database.
     @MainActor
     func fetchUserData(
-        retries: Int = 0
+        retries: Int = 0,
+        showLoadingImageIndicator: Bool = true
     ) {
         guard let uid else {
             let error = AuthenticaitonError.UserIdentifierIsNil
@@ -81,11 +82,11 @@ class HomeViewModel: ObservableObject {
                 if !showOnboarding {
                     fetchNeighbourhoodData()
                 }
-                downloadProfilePicture()
+                downloadProfilePicture(showLoadingImageIndicator: showLoadingImageIndicator)
             case .failure(let error):
                 if retries > 0 {
                     try? await Task.sleep(nanoseconds: UInt64(2_000_000_000))
-                    fetchUserData(retries: retries - 1)
+                    fetchUserData(retries: retries - 1, showLoadingImageIndicator: showLoadingImageIndicator)
                 } else {
                     showErrorMessage(error.spanishDescription)
                 }
@@ -385,8 +386,8 @@ class HomeViewModel: ObservableObject {
     }
 
     @MainActor
-    func downloadProfilePicture() {
-        isLoadingImage = true
+    func downloadProfilePicture(showLoadingImageIndicator: Bool = true) {
+        isLoadingImage = showLoadingImageIndicator
         Task { [weak self] in
             guard let self else { return }
             do {

@@ -43,6 +43,7 @@ struct HomePostsList: View {
         }
         .refreshable {
             viewModel.fetchPosts()
+            viewModel.fetchUserData(showLoadingImageIndicator: false)
         }
         .background(standalone ? Constants.Colors.backgroundDarkGrayColor : .clear)
         .navigationTitle(standalone ? "Posteos en \(viewModel.neighbourhoodModel?.name ?? "")" : "")
